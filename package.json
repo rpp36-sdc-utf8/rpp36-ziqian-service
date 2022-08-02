@@ -1,0 +1,20 @@
+{
+  "name": "rpp36-ziqian-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rpp36-sdc-utf8/rpp36-ziqian-service.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rpp36-sdc-utf8/rpp36-ziqian-service/issues"
+  },
+  "homepage": "https://github.com/rpp36-sdc-utf8/rpp36-ziqian-service#readme"
+}
