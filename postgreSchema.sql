@@ -4,14 +4,14 @@ CREATE DATABASE hr_sdc;
 DROP SCHEMA IF EXISTS reviews CASCADE;
 CREATE SCHEMA reviews;
 
--- CREATE TABLE reviews.products (
---   id SERIAL PRIMARY KEY,
---   name varchar,
---   slogan varchar(255),
---   description varchar(255),
---   category varchar(255),
---   default_price varchar(255)
--- );
+CREATE TABLE reviews.products (
+  id SERIAL PRIMARY KEY,
+  name varchar,
+  slogan varchar(255),
+  description varchar(255),
+  category varchar(255),
+  default_price varchar(255)
+);
 
 CREATE TABLE reviews.reviews (
   id SERIAL PRIMARY KEY,
