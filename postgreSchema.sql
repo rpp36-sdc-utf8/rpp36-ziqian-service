@@ -4,17 +4,18 @@ CREATE DATABASE hr_sdc;
 DROP SCHEMA IF EXISTS reviews CASCADE;
 CREATE SCHEMA reviews;
 
-CREATE TABLE reviews.products (
-  id SERIAL PRIMARY KEY,
-  name varchar,
-  slogan varchar(255),
-  description varchar(255),
-  category varchar(255),
-  default_price varchar(255)
-);
+-- CREATE TABLE reviews.products (
+--   id SERIAL PRIMARY KEY,
+--   name varchar,
+--   slogan varchar(255),
+--   description varchar(255),
+--   category varchar(255),
+--   default_price varchar(255)
+-- );
 
 CREATE TABLE reviews.reviews (
   id SERIAL PRIMARY KEY,
+  product_id integer,
   name varchar(255),
   email varchar(255),
   rating integer,
@@ -22,7 +23,7 @@ CREATE TABLE reviews.reviews (
   recommend boolean,
   body varchar(255),
   date varchar(255),
-  characteristics varchar(255),
+  characteristics json,
   response varchar(255) NULL,
   helpfulness INT DEFAULT 0,
   report BOOLEAN DEFAULT FALSE,
