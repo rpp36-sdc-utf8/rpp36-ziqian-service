@@ -6,32 +6,38 @@ CREATE SCHEMA reviews;
 
 CREATE TABLE reviews.products (
   id SERIAL PRIMARY KEY,
-  name varchar,
-  slogan varchar(255),
-  description varchar(255),
-  category varchar(255),
-  default_price varchar(255)
+  name VARCHAR(255),
+  slogan VARCHAR(255),
+  description VARCHAR(255),
+  category VARCHAR(255),
+  default_price VARCHAR(255)
+);
+
+CREATE TABLE reviews.characteristics (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  value INT,
+  product_id INT reference reviews.products
 );
 
 CREATE TABLE reviews.reviews (
   id SERIAL PRIMARY KEY,
-  product_id integer,
-  name varchar(255),
-  email varchar(255),
-  rating integer,
-  summary varchar(255),
+  user_name VARCHAR(255),
+  user_email VARCHAR(255),
+  rating INT,
+  summary VARCHAR(255),
   recommend boolean,
-  body varchar(255),
-  date varchar(255),
+  body VARCHAR(255),
+  date timestamptz,
   characteristics json,
-  response varchar(255) NULL,
+  response VARCHAR(255) NULL,
   helpfulness INT DEFAULT 0,
   report BOOLEAN DEFAULT FALSE,
-  product_id integer references reviews.products
+  product_id INT references reviews.products
 );
 
 CREATE TABLE reviews.photos (
   id SERIAL PRIMARY KEY,
-  url varchar(255),
-  reviews_id integer references reviews.reviews(id)
+  url VARCHAR(255),
+  reviews_id INT references reviews.reviews(id)
 );
