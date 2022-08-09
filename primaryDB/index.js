@@ -7,9 +7,9 @@ const pool = new Pool({
   port: 5432,
 });
 
-pool.on('connect', (client) => {
-  console.log('connected to database!');
-});
+// pool.on('connect', (client) => {
+//   console.log('connected to database!');
+// });
 
 // the pool will emit an error on behalf of any idle clients
 // it contains if a backend error or network partition happens
@@ -18,6 +18,4 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
-exports.fetch = () => {};
-exports.insertOne = () => {};
-exports.updateOne = () => {};
+module.exports = pool;
