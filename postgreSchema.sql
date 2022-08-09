@@ -1,10 +1,8 @@
-DROP DATABASE IF EXISTS hr_sdc;
-CREATE DATABASE hr_sdc;
-\c hr_sdc;
-DROP SCHEMA IF EXISTS reviews CASCADE;
-CREATE SCHEMA reviews;
+\c ziqianli;
+DROP SCHEMA IF EXISTS hr_sdc CASCADE;
+CREATE SCHEMA hr_sdc;
 
-CREATE TABLE reviews.products (
+CREATE TABLE hr_sdc.products (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255),
   slogan VARCHAR(255),
@@ -13,14 +11,14 @@ CREATE TABLE reviews.products (
   default_price VARCHAR(255)
 );
 
-CREATE TABLE reviews.characteristics (
+CREATE TABLE hr_sdc.characteristics (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255),
   value INT,
-  product_id INT reference reviews.products
+  product_id INT references hr_sdc.products
 );
 
-CREATE TABLE reviews.reviews (
+CREATE TABLE hr_sdc.reviews (
   id SERIAL PRIMARY KEY,
   user_name VARCHAR(255),
   user_email VARCHAR(255),
@@ -33,11 +31,11 @@ CREATE TABLE reviews.reviews (
   response VARCHAR(255) NULL,
   helpfulness INT DEFAULT 0,
   report BOOLEAN DEFAULT FALSE,
-  product_id INT references reviews.products
+  product_id INT references hr_sdc.products
 );
 
-CREATE TABLE reviews.photos (
+CREATE TABLE hr_sdc.photos (
   id SERIAL PRIMARY KEY,
   url VARCHAR(255),
-  reviews_id INT references reviews.reviews(id)
+  reviews_id INT references hr_sdc.reviews(id)
 );
