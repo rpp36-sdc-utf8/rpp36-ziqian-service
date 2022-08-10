@@ -1,37 +1,41 @@
-DROP DATABASE IF EXISTS hr_sdc;
-CREATE DATABASE hr_sdc;
-\c hr_sdc;
-DROP SCHEMA IF EXISTS reviews CASCADE;
-CREATE SCHEMA reviews;
+\c ziqianli;
+DROP SCHEMA IF EXISTS hr_sdc CASCADE;
+CREATE SCHEMA hr_sdc;
 
-CREATE TABLE reviews.products (
+CREATE TABLE hr_sdc.products (
   id SERIAL PRIMARY KEY,
-  name varchar,
-  slogan varchar(255),
-  description varchar(255),
-  category varchar(255),
-  default_price varchar(255)
+  name VARCHAR(255),
+  slogan VARCHAR(255),
+  description VARCHAR(255),
+  category VARCHAR(255),
+  default_price VARCHAR(255)
 );
 
-CREATE TABLE reviews.reviews (
+CREATE TABLE hr_sdc.characteristics (
   id SERIAL PRIMARY KEY,
-  product_id integer,
-  name varchar(255),
-  email varchar(255),
-  rating integer,
-  summary varchar(255),
+  name VARCHAR(255),
+  value INT,
+  product_id INT references hr_sdc.products
+);
+
+CREATE TABLE hr_sdc.reviews (
+  id SERIAL PRIMARY KEY,
+  user_name VARCHAR(255),
+  user_email VARCHAR(255),
+  rating INT,
+  summary VARCHAR(255),
   recommend boolean,
-  body varchar(255),
-  date varchar(255),
+  body VARCHAR(255),
+  date timestamptz,
   characteristics json,
-  response varchar(255) NULL,
+  response VARCHAR(255) NULL,
   helpfulness INT DEFAULT 0,
   report BOOLEAN DEFAULT FALSE,
-  product_id integer references reviews.products
+  product_id INT references hr_sdc.products
 );
 
-CREATE TABLE reviews.photos (
+CREATE TABLE hr_sdc.photos (
   id SERIAL PRIMARY KEY,
-  url varchar(255),
-  reviews_id integer references reviews.reviews(id)
+  url VARCHAR(255),
+  reviews_id INT references hr_sdc.reviews(id)
 );
