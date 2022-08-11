@@ -1,6 +1,7 @@
 const pool = require('./index');
 
 exports.fetch = () => {};
+
 exports.insertOne = (data, tableName, colNames) => {
   const valStr = Array(colNames.split(',').length).reduce((valArr, current, index) => {
     valStr.push(`$${index + 1}`);
@@ -23,4 +24,5 @@ exports.insertOne = (data, tableName, colNames) => {
       setImmediate(() => { throw err; });
     });
 };
+
 exports.updateOne = () => {};

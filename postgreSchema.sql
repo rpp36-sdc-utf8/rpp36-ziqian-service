@@ -20,22 +20,21 @@ CREATE TABLE hr_sdc.characteristics (
 
 CREATE TABLE hr_sdc.reviews (
   id SERIAL PRIMARY KEY,
-  user_name TEXT,
-  user_email TEXT,
+  reviewer_name TEXT,
+  reviewer_email TEXT,
   rating INT,
   summary TEXT,
   recommend boolean,
   body TEXT,
-  date timestamptz,
-  characteristics json,
+  date BIGINT, -- data information stored as milisecond number, still can order by number to perform sort by newest
   response TEXT NULL,
   helpfulness INT DEFAULT 0,
-  report BOOLEAN DEFAULT FALSE,
+  reported BOOLEAN DEFAULT FALSE,
   product_id INT references hr_sdc.products
 );
 
 CREATE TABLE hr_sdc.photos (
   id SERIAL PRIMARY KEY,
   url TEXT,
-  reviews_id INT references hr_sdc.reviews(id)
+  review_id INT references hr_sdc.reviews(id)
 );
