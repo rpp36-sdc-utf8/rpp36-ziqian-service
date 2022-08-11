@@ -4,38 +4,37 @@ CREATE SCHEMA hr_sdc;
 
 CREATE TABLE hr_sdc.products (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255),
-  slogan VARCHAR(255),
-  description VARCHAR(255),
-  category VARCHAR(255),
-  default_price VARCHAR(255)
+  name TEXT,
+  slogan TEXT,
+  description TEXT,
+  category TEXT,
+  default_price TEXT
 );
 
 CREATE TABLE hr_sdc.characteristics (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255),
+  name TEXT,
   value INT,
   product_id INT references hr_sdc.products
 );
 
 CREATE TABLE hr_sdc.reviews (
   id SERIAL PRIMARY KEY,
-  user_name VARCHAR(255),
-  user_email VARCHAR(255),
+  reviewer_name TEXT,
+  reviewer_email TEXT,
   rating INT,
-  summary VARCHAR(255),
+  summary TEXT,
   recommend boolean,
-  body VARCHAR(255),
-  date timestamptz,
-  characteristics json,
-  response VARCHAR(255) NULL,
+  body TEXT,
+  date BIGINT, -- data information stored as milisecond number, still can order by number to perform sort by newest
+  response TEXT NULL,
   helpfulness INT DEFAULT 0,
-  report BOOLEAN DEFAULT FALSE,
+  reported BOOLEAN DEFAULT FALSE,
   product_id INT references hr_sdc.products
 );
 
 CREATE TABLE hr_sdc.photos (
   id SERIAL PRIMARY KEY,
-  url VARCHAR(255),
-  reviews_id INT references hr_sdc.reviews(id)
+  url TEXT,
+  review_id INT references hr_sdc.reviews(id)
 );
