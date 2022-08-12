@@ -14,7 +14,8 @@ CREATE TABLE hr_sdc.products (
 CREATE TABLE hr_sdc.characteristics (
   id SERIAL PRIMARY KEY,
   name TEXT,
-  value INT,
+  value_total INT DEFAULT 0,
+  value_count INT DEFAULT 0,
   product_id INT references hr_sdc.products
 );
 
@@ -27,6 +28,7 @@ CREATE TABLE hr_sdc.reviews (
   recommend boolean,
   body TEXT,
   date BIGINT, -- data information stored as milisecond number, still can order by number to perform sort by newest
+  characteristics JSON,
   response TEXT NULL,
   helpfulness INT DEFAULT 0,
   reported BOOLEAN DEFAULT FALSE,

@@ -20,23 +20,47 @@ const options = {
     colNames: 'id,review_id,url',
     numOfCols: 3,
   },
+  characteristics: {
+    tableName: 'hr_sdc.characteristics',
+    colNames: 'id,product_id,name',
+    numOfCols: 3,
+  },
 };
 
-const basicETL = (fileName) => {
-  extract.getInputFileStream(fileName)
+const basicETL = () => load.copy(pool, 'product', options.product)
+  .then(() => load.copy(pool, 'reviews', options.reviews))
+  .then(() => load.copy(pool, 'reviews_photos', options.reviews_photos))
+  .then(() => load.copy(pool, 'characteristics', options.characteristics))
+  .catch((err) => {
+    setImmediate(() => { throw err; });
+  });
+
+const updateCharETL = (fileName) => {
+  // let line = 0;
+  const stream = extract.getInputFileStream(fileName)
     .pipe(csv.parse({ delimiter: ',', from_line: 2 }))
     .on('data', async (row) => {
-      // query the database to add data. Returns a promise.
-      await load.insertOne(pool, row, options[fileName]);
+      // line++;
+      stream.pause();
+      await load.updateChar(pool, row, { tableName: 'hr_sdc.characteristics' });
+      stream.resume();
+      // reading 10000 lines only
+      // if (line > 10000) {
+      //   stream.destroy();
+      // }
     })
-    .on('end', () => {
-      console.log(`${fileName} reading finished!`);
-    })
-    .on('error', (err) => {
-      console.log(err.message);
-    });
+    .on('end', () => { console.log(`${fileName} reading finished!`); })
+    .on('error', (err) => { console.log(err.message); });
 };
 
-basicETL('product');
-basicETL('reviews');
-basicETL('reviews_photos');
+// basicETL('product');
+// basicETL('reviews');
+// basicETL('reviews_photos');
+// basicETL('characteristics');
+
+// execution pipeline
+basicETL()
+  .then(() => updateCharETL('characteristic_reviews'))
+  .catch((err) => { console.log(err.message); });
+
+// updateCharETL('characteristic_reviews');
