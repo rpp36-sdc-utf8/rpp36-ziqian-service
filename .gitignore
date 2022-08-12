@@ -1,5 +1,5 @@
 node_modules
 .env
-legacy_data
 secondaryDB
 .DS_Store
+legacy_data

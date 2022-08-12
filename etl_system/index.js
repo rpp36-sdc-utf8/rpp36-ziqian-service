@@ -1,5 +1,4 @@
 const csv = require('csv');
-// const { Client } = require('pg');
 
 const pool = require('../primaryDB/index');
 const extract = require('./extract');
@@ -28,28 +27,6 @@ const options = {
   },
 };
 
-// const client = new Client({
-//   user: 'ziqianli',
-//   host: 'localhost',
-//   database: 'ziqianli',
-//   port: 5432,
-// });
-// client.connect();
-
-// const basicETL = (fileName) => {
-//   extract.getInputFileStream(fileName)
-//     .pipe(csv.parse({ delimiter: ',', from_line: 2 }))
-//     .on('data', async (row) => {
-//       await load.insertOne(pool, row, options[fileName]);
-//     })
-//     .on('end', () => {
-//       console.log(`${fileName} reading finished!`);
-//     })
-//     .on('error', (err) => {
-//       console.log(err.message);
-//     });
-// };
-
 const basicETL = () => load.copy(pool, 'product', options.product)
   .then(() => load.copy(pool, 'reviews', options.reviews))
   .then(() => load.copy(pool, 'reviews_photos', options.reviews_photos))
@@ -59,22 +36,31 @@ const basicETL = () => load.copy(pool, 'product', options.product)
   });
 
 const updateCharETL = (fileName) => {
-  extract.getInputFileStream(fileName)
+  // let line = 0;
+  const stream = extract.getInputFileStream(fileName)
     .pipe(csv.parse({ delimiter: ',', from_line: 2 }))
-    .on('data', (row) => {
-      load.updateChar(pool, row, { tableName: 'hr_sdc.characteristics' });
+    .on('data', async (row) => {
+      // line++;
+      stream.pause();
+      await load.updateChar(pool, row, { tableName: 'hr_sdc.characteristics' });
+      stream.resume();
+      // reading 10000 lines only
+      // if (line > 10000) {
+      //   stream.destroy();
+      // }
     })
-    .on('end', () => {
-      console.log(`${fileName} reading finished!`);
-    })
-    .on('error', (err) => {
-      console.log(err.message);
-    });
+    .on('end', () => { console.log(`${fileName} reading finished!`); })
+    .on('error', (err) => { console.log(err.message); });
 };
 
 // basicETL('product');
 // basicETL('reviews');
 // basicETL('reviews_photos');
 // basicETL('characteristics');
+
+// execution pipeline
 basicETL()
-  .then(() => updateCharETL('characteristic_reviews'));
+  .then(() => updateCharETL('characteristic_reviews'))
+  .catch((err) => { console.log(err.message); });
+
+// updateCharETL('characteristic_reviews');
