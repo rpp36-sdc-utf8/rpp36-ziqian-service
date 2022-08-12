@@ -15,12 +15,28 @@ exports.copy = (pool, fileName, options) => {
 };
 
 exports.updateChar = (pool, data, options) => {
-  const query = `UPDATE ${options.tableName}
-      SET value_total=value_total+${data[3]}, value_count=value_count+1
-      WHERE id=${data[1]}`;
+  const query = Object.keys(data).reduce((consolidQuery, charId) => {
+    const updateCharIdQuery = `UPDATE ${options.tableName}
+      SET value_total=value_total+${data[charId].value_total}, value_count=value_count+${data[charId].value_count}
+      WHERE id=${charId};\n`;
+    return consolidQuery + updateCharIdQuery;
+  }, '');
 
   return pool
     .query(query)
-    .then(() => console.log(`${data[0]} added to ${options.tableName}`))
+    .then(() => console.log(`${Object.keys(data)} added to ${options.tableName}`))
     .catch((err) => { throw err; });
+
+  // const queryPromises = Object.keys(data).reduce((qPromise, charId) => {
+  //   const updateCharIdQuery = `UPDATE ${options.tableName}
+  //     SET value_total=value_total+${data[charId].value_total}, value_count=value_count+${data[charId].value_count}
+  //     WHERE id=${charId};\n`;
+  //   // console.log(updateCharIdQuery);
+  //   qPromise.push(pool.query(updateCharIdQuery));
+  //   return qPromise;
+  // }, []);
+
+  // return Promise.all(queryPromises)
+  //   .then(() => console.log(`${Object.keys(data)} added to ${options.tableName}`))
+  //   .catch((err) => { throw err; });
 };

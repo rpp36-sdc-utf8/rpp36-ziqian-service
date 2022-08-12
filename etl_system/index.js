@@ -36,27 +36,50 @@ const basicETL = () => load.copy(pool, 'product', options.product)
   });
 
 const updateCharETL = (fileName) => {
-  // let line = 0;
+  const maxLine = 100000;
+  let lineCount = 0;
+  let updateObj = {};
+  // let totalLine = 0;
   const stream = extract.getInputFileStream(fileName)
     .pipe(csv.parse({ delimiter: ',', from_line: 2 }))
     .on('data', async (row) => {
-      // line++;
-      stream.pause();
-      await load.updateChar(pool, row, { tableName: 'hr_sdc.characteristics' });
-      stream.resume();
-      // reading 10000 lines only
-      // if (line > 10000) {
+      lineCount ++;
+      // totalLine ++;
+      const charId = row[1];
+      const value = Number(row[3]);
+      // every time there is line read
+      if (updateObj[charId]) {
+        updateObj[charId].value_total += value;
+        updateObj[charId].value_count += 1;
+      } else {
+        updateObj[charId] = {};
+        updateObj[charId].value_total = value;
+        updateObj[charId].value_count = 1;
+      }
+
+      // if lineCount >= maxLine
+      if (lineCount >= maxLine) {
+        stream.pause();
+        // await load.updateChar(pool, row, { tableName: 'hr_sdc.characteristics' });
+        await load.updateChar(pool, updateObj, { tableName: 'hr_sdc.characteristics' });
+        lineCount = 0;
+        updateObj = {};
+        stream.resume();
+      }
+
+      // if (totalLine === 1000000) {
       //   stream.destroy();
       // }
     })
-    .on('end', () => { console.log(`${fileName} reading finished!`); })
+    .on('end', async () => {
+      if (Object.keys(updateObj).length > 0) {
+        await load.updateChar(pool, updateObj, { tableName: 'hr_sdc.characteristics' });
+        updateObj = {};
+      }
+      console.log(`${fileName} reading finished!`);
+    })
     .on('error', (err) => { console.log(err.message); });
 };
-
-// basicETL('product');
-// basicETL('reviews');
-// basicETL('reviews_photos');
-// basicETL('characteristics');
 
 // execution pipeline
 basicETL()
