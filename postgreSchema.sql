@@ -28,7 +28,6 @@ CREATE TABLE hr_sdc.reviews (
   recommend boolean,
   body TEXT,
   date BIGINT, -- data information stored as milisecond number, still can order by number to perform sort by newest
-  characteristics JSON,
   response TEXT NULL,
   helpfulness INT DEFAULT 0,
   reported BOOLEAN DEFAULT FALSE,

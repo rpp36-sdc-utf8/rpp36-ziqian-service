@@ -1,6 +1,8 @@
 const path = require('path');
+const now = require('performance-now');
 
 exports.copy = (pool, fileName, options) => {
+  const start = now();
   const filePath = path.join(__dirname, `legacy_data/${fileName}.csv`);
   const query = `
     COPY ${options.tableName}(${options.colNames})
@@ -11,16 +13,22 @@ exports.copy = (pool, fileName, options) => {
 
   return pool
     .query(query)
-    .then(() => console.log(`complete copying ${options.tableName} from ${filePath}`));
+    .then(() => {
+      const end = now();
+      console.log(`complete copying ${options.tableName} from ${filePath} in ${(end - start).toFixed(3)}ms.`);
+    });
 };
 
-exports.updateChar = (pool, data, options) => {
-  const query = `UPDATE ${options.tableName}
-      SET value_total=value_total+${data[3]}, value_count=value_count+1
-      WHERE id=${data[1]}`;
+exports.update = (pool, data, options) => {
+  const query = Object.keys(data).reduce((consolidQuery, charId) => {
+    const updateCharIdQuery = `UPDATE ${options.tableName}
+      SET value_total=value_total+${data[charId].value_total}, value_count=value_count+${data[charId].value_count}
+      WHERE id=${charId};\n`;
+    return consolidQuery + updateCharIdQuery;
+  }, '');
 
   return pool
     .query(query)
-    .then(() => console.log(`${data[0]} added to ${options.tableName}`))
+    // .then(() => console.log(`${Object.keys(data)} added to ${options.tableName}`))
     .catch((err) => { throw err; });
 };
