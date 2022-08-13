@@ -16,7 +16,8 @@ CREATE TABLE hr_sdc.characteristics (
   name TEXT,
   value_total INT DEFAULT 0,
   value_count INT DEFAULT 0,
-  product_id INT references hr_sdc.products
+  product_id INT references hr_sdc.products,
+  UNIQUE (id, product_id)
 );
 
 CREATE TABLE hr_sdc.reviews (
@@ -31,11 +32,13 @@ CREATE TABLE hr_sdc.reviews (
   response TEXT NULL,
   helpfulness INT DEFAULT 0,
   reported BOOLEAN DEFAULT FALSE,
-  product_id INT references hr_sdc.products
+  product_id INT references hr_sdc.products,
+  UNIQUE (id, product_id)
 );
 
 CREATE TABLE hr_sdc.photos (
   id SERIAL PRIMARY KEY,
   url TEXT,
-  review_id INT references hr_sdc.reviews(id)
+  review_id INT references hr_sdc.reviews(id),
+  UNIQUE (id, review_id)
 );

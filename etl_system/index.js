@@ -45,13 +45,17 @@ const updateCharETL = (fileName) => {
       lineCount ++;
       const charId = row[1];
       const value = Number(row[3]);
-      if (updateObj[charId]) {
-        updateObj[charId].value_total += value;
-        updateObj[charId].value_count += 1;
-      } else {
-        updateObj[charId] = {};
-        updateObj[charId].value_total = value;
-        updateObj[charId].value_count = 1;
+
+      // ensure row has valid data
+      if (charId && value) {
+        if (updateObj[charId]) {
+          updateObj[charId].value_total += value;
+          updateObj[charId].value_count += 1;
+        } else {
+          updateObj[charId] = {};
+          updateObj[charId].value_total = value;
+          updateObj[charId].value_count = 1;
+        }
       }
 
       if (lineCount >= maxLine) {
