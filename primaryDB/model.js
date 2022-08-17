@@ -1,28 +1,79 @@
 const pool = require('./index');
 
-// the pool will emit an error on behalf of any idle clients
-// it contains if a backend error or network partition happens
-pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
-});
-
 const fetchPhotos = (reviewId) => {
-  // fetch all photos
+  const queryStr = `SELECT * FROM hr_sdc.photos WHERE review_id=${reviewId};`;
+  return pool
+    .query(queryStr)
+    .then((data) => data.rows)
+    .catch((err) => { throw err; });
 };
 
 const fetchCharacteristic = (productId) => {
   // fetch chars and construct into an obj to return
-}
+};
 
 exports.fetchReviews = (options) => {
-  const {productId, count, sort, page} = options;
-  // fetch reviews from hr_sdc.reviews based on options
-  // get all reviews_id and look for photos for those reviews
+  const { productId, sort, count, page } = options;
+  let sortStr;
+
+  // order by clause
+  switch (sort) {
+    case 'newest':
+      sortStr = 'date DESC';
+      break;
+    case 'helpful':
+      sortStr = 'helpfulness DESC';
+      break;
+    default:
+      sortStr = 'id';
+  }
+
+  const queryStr = `
+    SELECT *
+    FROM hr_sdc.reviews
+    WHERE product_id=${productId}
+    AND reported=false
+    ORDER BY ${sortStr}
+    LIMIT ${count}
+    OFFSET ${page * count};
+  `;
+
+  return pool
+    .query(queryStr)
+    .then(async (data) => {
+      // make a copy of reviews data
+      let reviews = data.rows.slice();
+
+      // get all photos for reviews
+      const photosPromises = reviews.map((review) => fetchPhotos(review.id));
+      const photos = await Promise.all(photosPromises)
+        .then((photo) => photo)
+        .catch((err) => { throw err; });
+
+      for (let i = 0; i < reviews.length; i ++) {
+        let review = reviews[i];
+        let photo = photos[i];
+
+        // clean up data
+        delete photo.review_id;
+        review.photos = photo;
+        delete review.product_id;
+        review.date = Date(review.date);
+
+        // updated reivew
+        reviews[i] = review;
+      }
+
+      return reviews;
+    })
+    .catch((err) => {
+      console.log(err);
+      throw err;
+    });
 };
 
 exports.fetchReviewsMeta = (productId) => {
-  // query to fetch all reviews with product_id column rating, recommended
+  // query to fetch all reviews with column rating, recommended
   // query to fetch characteristics name, total, count
   // constuct the response object
 };
