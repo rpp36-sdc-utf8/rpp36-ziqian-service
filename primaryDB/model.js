@@ -89,9 +89,11 @@ exports.fetchReviewsMeta = (productId) => {
     GROUP BY recommend;
     `;
   const charQueryStr = `
-    SELECT name, value_total/value_count AS value
-    FROM hr_sdc.characteristics
-    WHERE product_id=${productId}
+    SELECT name, avg(value) AS value
+    FROM hr_sdc.characteristic_reviews rv
+    JOIN hr_sdc.characteristics char on char.id=rv.characteristic_id
+    JOIN hr_sdc.reviews r on r.id=rv.review_id where r.reported=false and char.product_id=${productId}
+    GROUP BY name;
     `;
   // query to fetch all reviews with column rating, recommended
   const ratingQuery = pool.query(ratingQueryStr);
