@@ -1,4 +1,5 @@
 const pool = require('./index');
+const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
   const queryStr = `SELECT * FROM hr_sdc.photos WHERE review_id=${reviewId};`;
@@ -73,9 +74,49 @@ exports.fetchReviews = (options) => {
 };
 
 exports.fetchReviewsMeta = (productId) => {
+  const ratingQueryStr = `
+    SELECT rating, count(*)
+    FROM hr_sdc.reviews
+    WHERE product_id=${productId}
+    AND reported=false
+    GROUP BY rating;
+    `;
+  const recommendQueryStr = `
+    SELECT recommend, count(*)
+    FROM hr_sdc.reviews
+    WHERE product_id=${productId}
+    AND reported=false
+    GROUP BY recommend;
+    `;
+  const charQueryStr = `
+    SELECT name, value_total/value_count AS value
+    FROM hr_sdc.characteristics
+    WHERE product_id=${productId}
+    `;
   // query to fetch all reviews with column rating, recommended
+  const ratingQuery = pool.query(ratingQueryStr);
+  const recommendedQuery = pool.query(recommendQueryStr);
   // query to fetch characteristics name, total, count
-  // constuct the response object
+  const charQuery = pool.query(charQueryStr);
+
+  return Promise.all([ratingQuery, recommendedQuery, charQuery])
+    .then((result) => {
+      const [rating, recommend, char] = result;
+      const ratings = helper.convertArrToObj(rating.rows, 'rating', 'count');
+      const recommended = helper.convertArrToObj(recommend.rows, 'recommend', 'count');
+      const characteristics = helper.convertArrToObj(char.rows, 'name', 'value');
+
+      console.log(ratings, recommended, characteristics);
+      return {
+        ratings,
+        recommended,
+        characteristics,
+      };
+    })
+    .catch((err) => {
+      console.log(err);
+      throw err;
+    });
 };
 
 exports.insertOne = (productId, data) => {
