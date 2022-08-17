@@ -21,14 +21,13 @@ app.route('/reviews')
       sort: sort || 'relavent',
     };
 
-    let data = {
-      product: product_id,
-      page: page || 0,
-      count: count || 5,
-    };
-
     Models.fetchReviews(options)
       .then((results) => {
+        let data = {
+          product: product_id,
+          page: page || 0,
+          count: count || 5,
+        };
         data.results = results;
         console.log('data', data);
         res.status(200).json(data);
@@ -50,13 +49,12 @@ app.route('/reviews')
 app.get('/reviews/meta', (req, res) => {
   const { product_id } = req.query;
 
-  // res.status(200).json(req.query);
-
-  // Models.fetchReviewsMeta(product_id)
-  //   .then((data) => {
-  //     res.status(200).json(data);
-  //   })
-  //   .catch((err) => res.status(500).json(err));
+  Models.fetchReviewsMeta(product_id)
+    .then((data) => {
+      data.product_id = product_id;
+      res.status(200).json(data);
+    })
+    .catch((err) => res.status(500).json(err));
 });
 
 app.put('/reviews/:review_id/helpful', (req, res) => {

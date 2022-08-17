@@ -32,6 +32,7 @@ exports.fetchReviews = (options) => {
     SELECT *
     FROM hr_sdc.reviews
     WHERE product_id=${productId}
+    AND reported=false
     ORDER BY ${sortStr}
     LIMIT ${count}
     OFFSET ${page * count};
@@ -72,7 +73,7 @@ exports.fetchReviews = (options) => {
 };
 
 exports.fetchReviewsMeta = (productId) => {
-  // query to fetch all reviews with product_id column rating, recommended
+  // query to fetch all reviews with column rating, recommended
   // query to fetch characteristics name, total, count
   // constuct the response object
 };
