@@ -64,28 +64,24 @@ app.get('/reviews/meta', (req, res) => {
 
 app.put('/reviews/:review_id/helpful', (req, res) => {
   const { review_id } = req.params;
-  const query = 'helpfulness';
+  const column = 'helpfulness';
 
-  // res.status(200).json(req.params);
-
-  // Models.updateOne(review_id, query)
-  //   .then(() => {
-  //     res.send(201).send('Updated');
-  //   })
-  //   .catch((err) => res.status(500).json(err));
+  Models.updateReview(review_id, column)
+    .then(() => {
+      res.status(201).send('Updated');
+    })
+    .catch((err) => res.status(500).json(err));
 });
 
 app.put('/reviews/:review_id/report', (req, res) => {
   const { review_id } = req.params;
-  const query = 'report';
+  const column = 'reported';
 
-  // res.status(200).json(req.params);
-
-  // Models.updateOne(review_id, query)
-  //   .then(() => {
-  //     res.send(201).send('Updated');
-  //   })
-  //   .catch((err) => res.status(500).json(err));
+  Models.updateReview(review_id, column)
+    .then(() => {
+      res.status(201).send('Updated');
+    })
+    .catch((err) => res.status(500).json(err));
 });
 
 module.exports = app;

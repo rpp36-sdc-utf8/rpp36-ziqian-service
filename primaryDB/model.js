@@ -123,10 +123,6 @@ exports.fetchReviewsMeta = (productId) => {
 };
 
 exports.insertToReview = (data) => {
-  // const photos = JSON.parse(data.photos);
-  // const characteristics = JSON.parse(data.characteristics);
-
-  // construct query string
   const query = {
     text: `
       INSERT INTO hr_sdc.reviews
@@ -182,6 +178,15 @@ exports.insertToPhotos = (data, reviewId) => {
     .catch((err) => { throw err; });
 };
 
-exports.updateReview = (reviewId, options) => {
-  // update helpfulness/report on review matching id
+exports.updateReview = (reviewId, column) => {
+  let query;
+  if (column === 'helpfulness') {
+    query = `UPDATE hr_sdc.reviews SET helpfulness=helpfulness+1 WHERE id=${reviewId}`;
+  }
+  if (column === 'reported') {
+    query = `UPDATE hr_sdc.reviews SET reported=true WHERE id=${reviewId}`;
+  }
+  return pool
+    .query(query)
+    .catch((err) => { throw err; });
 };
