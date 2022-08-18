@@ -144,50 +144,6 @@ exports.insertToReview = (data) => {
     .query(format(query.text, query.values))
     .then((res) => res.rows[0].id)
     .catch((err) => { throw err; });
-    // .then((res) => {
-    //   const reviewId = res.rows[0].id;
-    //   const result = {};
-    //   result.reviewId = reviewId;
-
-      // if (characteristics) {
-      //   const values = Object.keys(characteristics).reduce((valArr, charId) => {
-      //     const temp = [charId, reviewId, characteristics[charId]];
-      //     valArr.push(temp);
-      //     return valArr;
-      //   }, []);
-
-      //   const insertToChar = {
-      //     text: 'INSERT INTO hr_sdc.characteristic_reviews(characteristic_id, review_id, value) VALUES %L RETURNING id',
-      //     values,
-      //   };
-
-      //   const charReviewId = await pool
-      //     .query(format(insertToChar.text, insertToChar.values))
-      //     .then((charReviewTable) => charReviewTable.rows[0].id);
-
-      //   result.charReviewId = charReviewId;
-      // }
-
-      // if has photos
-      // if (photos.length !== 0) {
-      //   const values = photos.reduce((valArr, photoUrl) => {
-      //     const temp = [photoUrl, reviewId];
-      //     valArr.push(temp);
-      //     return valArr;
-      //   }, []);
-
-      //   const insertToPhotos = {
-      //     text: 'INSERT INTO hr_sdc.photos (url, review_id) VALUES %L RETURNING id',
-      //     values,
-      //   };
-
-      //   const photoId = await pool
-      //     .query(format(insertToPhotos.text, insertToPhotos.values))
-      //     .then((photosTable) => photosTable.rows[0].id);
-
-      //   result.photoId = photoId;
-      // }
-    // });
 };
 
 exports.insertToCharReview = (data, reviewId) => {

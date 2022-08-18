@@ -36,8 +36,7 @@ app.route('/reviews')
   })
   .post((req, res) => {
     const data = req.body;
-    const photos = JSON.parse(data.photos);
-    const characteristics = JSON.parse(data.characteristics);
+    const { photos, characteristics } = data;
     const result = {};
 
     Models.insertToReview(data)
