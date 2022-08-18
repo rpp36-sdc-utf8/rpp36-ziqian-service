@@ -37,6 +37,19 @@ const basicETL = () => load.copy(pool, 'product', options.product)
     setImmediate(() => { throw err; });
   });
 
+const syncSerialId = () => load.syncSerialId(pool, options.reviews)
+  .then(() => load.syncSerialId(pool, options.reviews_photos))
+  .then(() => load.syncSerialId(pool, options.characteristic_reviews))
+  .catch((err) => {
+    setImmediate(() => { throw err; });
+  });
+
+// execution pipeline
+basicETL()
+  .then(() => syncSerialId())
+  // .then(() => updateCharETL('characteristic_reviews'))
+  .catch((err) => { console.log(err.message); });
+
 // const updateCharETL = (fileName) => {
 //   const start = now();
 
@@ -85,8 +98,3 @@ const basicETL = () => load.copy(pool, 'product', options.product)
 //     })
 //     .on('error', (err) => { console.log(err.message); });
 // };
-
-// execution pipeline
-basicETL()
-  // .then(() => updateCharETL('characteristic_reviews'))
-  .catch((err) => { console.log(err.message); });
