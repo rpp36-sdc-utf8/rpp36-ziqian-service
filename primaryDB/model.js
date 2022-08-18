@@ -10,10 +10,6 @@ const fetchPhotos = (reviewId) => {
     .catch((err) => { throw err; });
 };
 
-const fetchCharacteristic = (productId) => {
-  // fetch chars and construct into an obj to return
-};
-
 exports.fetchReviews = (options) => {
   const { productId, sort, count, page } = options;
   let sortStr;
@@ -44,7 +40,7 @@ exports.fetchReviews = (options) => {
     .query(queryStr)
     .then(async (data) => {
       // make a copy of reviews data
-      let reviews = data.rows.slice();
+      const reviews = data.rows.slice();
 
       // get all photos for reviews
       const photosPromises = reviews.map((review) => fetchPhotos(review.id));
@@ -53,8 +49,8 @@ exports.fetchReviews = (options) => {
         .catch((err) => { throw err; });
 
       for (let i = 0; i < reviews.length; i ++) {
-        let review = reviews[i];
-        let photo = photos[i];
+        const review = reviews[i];
+        const photo = photos[i];
 
         // clean up data
         delete photo.review_id;
@@ -96,10 +92,9 @@ exports.fetchReviewsMeta = (productId) => {
     JOIN hr_sdc.reviews r on r.id=rv.review_id where r.reported=false and char.product_id=${productId}
     GROUP BY name;
     `;
-  // query to fetch all reviews with column rating, recommended
+
   const ratingQuery = pool.query(ratingQueryStr);
   const recommendedQuery = pool.query(recommendQueryStr);
-  // query to fetch characteristics name, total, count
   const charQuery = pool.query(charQueryStr);
 
   return Promise.all([ratingQuery, recommendedQuery, charQuery])
@@ -109,7 +104,6 @@ exports.fetchReviewsMeta = (productId) => {
       const recommended = helper.convertArrToObj(recommend.rows, 'recommend', 'count');
       const characteristics = helper.convertArrToObj(char.rows, 'name', 'value');
 
-      console.log(ratings, recommended, characteristics);
       return {
         ratings,
         recommended,
