@@ -19,16 +19,16 @@ exports.copy = (pool, fileName, options) => {
     });
 };
 
-exports.update = (pool, data, options) => {
-  const query = Object.keys(data).reduce((consolidQuery, charId) => {
-    const updateCharIdQuery = `UPDATE ${options.tableName}
-      SET value_total=value_total+${data[charId].value_total}, value_count=value_count+${data[charId].value_count}
-      WHERE id=${charId};\n`;
-    return consolidQuery + updateCharIdQuery;
-  }, '');
+// exports.update = (pool, data, options) => {
+//   const query = Object.keys(data).reduce((consolidQuery, charId) => {
+//     const updateCharIdQuery = `UPDATE ${options.tableName}
+//       SET value_total=value_total+${data[charId].value_total}, value_count=value_count+${data[charId].value_count}
+//       WHERE id=${charId};\n`;
+//     return consolidQuery + updateCharIdQuery;
+//   }, '');
 
-  return pool
-    .query(query)
-    // .then(() => console.log(`${Object.keys(data)} added to ${options.tableName}`))
-    .catch((err) => { throw err; });
-};
+//   return pool
+//     .query(query)
+//     // .then(() => console.log(`${Object.keys(data)} added to ${options.tableName}`))
+//     .catch((err) => { throw err; });
+// };
