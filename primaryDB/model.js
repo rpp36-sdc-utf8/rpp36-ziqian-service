@@ -1,4 +1,5 @@
 const pool = require('./index');
+const format = require('pg-format');
 const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
@@ -121,28 +122,110 @@ exports.fetchReviewsMeta = (productId) => {
     });
 };
 
-exports.insertOne = (productId, data) => {
-  // if data has photos
-    // reconstruct data to review data and photo data
-
-  // get characteristics
+exports.insertToReview = (data) => {
+  // const photos = JSON.parse(data.photos);
+  // const characteristics = JSON.parse(data.characteristics);
 
   // construct query string
-  const insertToReviews = {
-    text: `INSERT INTO hr_sdc.reviews () VALUES($1,$2,$3,$4,$5,$6)`,
-    values: data,
+  const query = {
+    text: `
+      INSERT INTO hr_sdc.reviews
+      (reviewer_name, reviewer_email, rating, summary, recommend, body, date, product_id)
+      VALUES (%L)
+      RETURNING id;
+      `,
+    values: [
+      data.name, data.email, Number(data.rating), data.summary,
+      Boolean(data.recommend), data.body, Date.now(), data.product_id,
+    ],
   };
 
   return pool
-    .query(insertToReviews)
-    .then((data) => {
-      // get insertId for reviews
+    .query(format(query.text, query.values))
+    .then((res) => res.rows[0].id)
+    .catch((err) => { throw err; });
+    // .then((res) => {
+    //   const reviewId = res.rows[0].id;
+    //   const result = {};
+    //   result.reviewId = reviewId;
+
+      // if (characteristics) {
+      //   const values = Object.keys(characteristics).reduce((valArr, charId) => {
+      //     const temp = [charId, reviewId, characteristics[charId]];
+      //     valArr.push(temp);
+      //     return valArr;
+      //   }, []);
+
+      //   const insertToChar = {
+      //     text: 'INSERT INTO hr_sdc.characteristic_reviews(characteristic_id, review_id, value) VALUES %L RETURNING id',
+      //     values,
+      //   };
+
+      //   const charReviewId = await pool
+      //     .query(format(insertToChar.text, insertToChar.values))
+      //     .then((charReviewTable) => charReviewTable.rows[0].id);
+
+      //   result.charReviewId = charReviewId;
+      // }
+
       // if has photos
-        // insert photos
-      // update characteristics
-    });
+      // if (photos.length !== 0) {
+      //   const values = photos.reduce((valArr, photoUrl) => {
+      //     const temp = [photoUrl, reviewId];
+      //     valArr.push(temp);
+      //     return valArr;
+      //   }, []);
+
+      //   const insertToPhotos = {
+      //     text: 'INSERT INTO hr_sdc.photos (url, review_id) VALUES %L RETURNING id',
+      //     values,
+      //   };
+
+      //   const photoId = await pool
+      //     .query(format(insertToPhotos.text, insertToPhotos.values))
+      //     .then((photosTable) => photosTable.rows[0].id);
+
+      //   result.photoId = photoId;
+      // }
+    // });
 };
 
-exports.updateOne = (reviewId, options) => {
+exports.insertToCharReview = (data, reviewId) => {
+  const values = Object.keys(data).reduce((valArr, charId) => {
+    const temp = [charId, reviewId, data[charId]];
+    valArr.push(temp);
+    return valArr;
+  }, []);
+
+  const query = {
+    text: 'INSERT INTO hr_sdc.characteristic_reviews(characteristic_id, review_id, value) VALUES %L RETURNING id',
+    values,
+  };
+
+  return pool
+    .query(format(query.text, query.values))
+    .then((res) => res.rows[0].id)
+    .catch((err) => { throw err; });
+};
+
+exports.insertToPhotos = (data, reviewId) => {
+  const values = data.reduce((valArr, photoUrl) => {
+    const temp = [photoUrl, reviewId];
+    valArr.push(temp);
+    return valArr;
+  }, []);
+
+  const query = {
+    text: 'INSERT INTO hr_sdc.photos (url, review_id) VALUES %L RETURNING id',
+    values,
+  };
+
+  return pool
+    .query(format(query.text, query.values))
+    .then((res) => res.rows[0].id)
+    .catch((err) => { throw err; });
+};
+
+exports.updateReview = (reviewId, options) => {
   // update helpfulness/report on review matching id
 };
