@@ -1,5 +1,5 @@
-const pool = require('./index');
 const format = require('pg-format');
+const pool = require('./index');
 const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
@@ -27,7 +27,7 @@ exports.fetchReviews = (options) => {
   }
 
   const queryStr = `
-    SELECT *
+    SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
     FROM hr_sdc.reviews
     WHERE product_id=${productId}
     AND reported=false
@@ -43,7 +43,7 @@ exports.fetchReviews = (options) => {
       const reviews = data.rows.slice();
 
       // get all photos for reviews
-      const photosPromises = reviews.map((review) => fetchPhotos(review.id));
+      const photosPromises = reviews.map((review) => fetchPhotos(review.review_id));
       const photos = await Promise.all(photosPromises)
         .then((photo) => photo)
         .catch((err) => { throw err; });
@@ -86,11 +86,11 @@ exports.fetchReviewsMeta = (productId) => {
     GROUP BY recommend;
     `;
   const charQueryStr = `
-    SELECT name, avg(value) AS value
+    SELECT characteristic_id, name, avg(value) AS value
     FROM hr_sdc.characteristic_reviews rv
     JOIN hr_sdc.characteristics char on char.id=rv.characteristic_id
     JOIN hr_sdc.reviews r on r.id=rv.review_id where r.reported=false and char.product_id=${productId}
-    GROUP BY name;
+    GROUP BY characteristic_id, name;
     `;
 
   const ratingQuery = pool.query(ratingQueryStr);
@@ -102,7 +102,7 @@ exports.fetchReviewsMeta = (productId) => {
       const [rating, recommend, char] = result;
       const ratings = helper.convertArrToObj(rating.rows, 'rating', 'count');
       const recommended = helper.convertArrToObj(recommend.rows, 'recommend', 'count');
-      const characteristics = helper.convertArrToObj(char.rows, 'name', 'value');
+      const characteristics = helper.convertCharObj(char.rows, 'name', 'value', 'characteristic_id');
 
       return {
         ratings,
@@ -182,5 +182,8 @@ exports.updateReview = (reviewId, column) => {
   }
   return pool
     .query(query)
-    .catch((err) => { throw err; });
+    .catch((err) => {
+      console.log(err);
+      throw err;
+    });
 };

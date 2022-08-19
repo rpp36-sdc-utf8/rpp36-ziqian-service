@@ -16,7 +16,7 @@ app.route('/reviews')
     const { product_id, page, count, sort } = req.query;
     const options = {
       productId: product_id,
-      page: page || 0,
+      page: page - 1 || 0,
       count: count || 5,
       sort: sort || 'relavent',
     };
@@ -25,11 +25,11 @@ app.route('/reviews')
       .then((results) => {
         let data = {
           product: product_id,
-          page: page || 0,
+          page: page - 1 || 0,
           count: count || 5,
         };
         data.results = results;
-        console.log('data', data);
+        console.log('reviews', data);
         res.status(200).json(data);
       })
       .catch((err) => res.status(500).json(err));
@@ -57,6 +57,7 @@ app.get('/reviews/meta', (req, res) => {
   Models.fetchReviewsMeta(product_id)
     .then((data) => {
       data.product_id = product_id;
+      console.log('reviews meta', data);
       res.status(200).json(data);
     })
     .catch((err) => res.status(500).json(err));
@@ -65,6 +66,7 @@ app.get('/reviews/meta', (req, res) => {
 app.put('/reviews/:review_id/helpful', (req, res) => {
   const { review_id } = req.params;
   const column = 'helpfulness';
+  console.log(review_id);
 
   Models.updateReview(review_id, column)
     .then(() => {
