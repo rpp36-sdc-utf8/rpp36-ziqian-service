@@ -35,15 +35,20 @@ app.route('/reviews')
       .catch((err) => res.status(500).json(err));
   })
   .post((req, res) => {
-    const body = req.body;
+    const data = req.body;
+    const { photos, characteristics } = data;
+    const result = {};
 
-    // res.status(200).json(body);
-
-    // Models.insertOne(body)
-    //   .then(() => {
-    //     res.status(201).send('Created');
-    //   })
-    //   .catch((err) => res.status(500).json(err));
+    Models.insertToReview(data)
+      .then(async (reviewId) => {
+        result.reviewId = reviewId;
+        result.charReviewId = await Models.insertToCharReview(characteristics, reviewId);
+        if (photos.length !== 0) {
+          result.photoId = await Models.insertToPhotos(photos, reviewId);
+        }
+        res.status(201).json(result);
+      })
+      .catch((err) => res.status(500).json(err));
   });
 
 app.get('/reviews/meta', (req, res) => {
