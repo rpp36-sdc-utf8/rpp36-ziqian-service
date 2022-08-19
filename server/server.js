@@ -66,7 +66,6 @@ app.get('/reviews/meta', (req, res) => {
 app.put('/reviews/:review_id/helpful', (req, res) => {
   const { review_id } = req.params;
   const column = 'helpfulness';
-  console.log(review_id);
 
   Models.updateReview(review_id, column)
     .then(() => {
