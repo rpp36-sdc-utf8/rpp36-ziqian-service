@@ -1,35 +1,133 @@
-const request = require('supertest');
+const supertest = require('supertest');
 const server = require('./server');
+const pool = require('../primaryDB/index');
+
+const request = supertest(server);
+
+afterAll(() => {
+  pool.end();
+});
 
 describe('Test the root path', () => {
-  test('It should response the GET method', () => {
-    request(server)
+  test('It should response the GET method', () => (
+    request
       .get('/')
       .then((response) => {
         expect(response.statusCode).toBe(200);
-      });
-  });
+      })
+  ));
 });
 
-describe('GET /reviews/:product_id', () => {
-  it.todo('response with json and status of 200, product_id=71701');
+describe('GET /reviews', () => {
+  it('response with correct json and status of 200', () => (
+    request
+      .get('/reviews')
+      .query({ product_id: 71701 })
+      .then((res) => {
+        expect(res.statusCode).toBe(200);
+        expect(res.headers['content-type']).toMatch(/json/);
+        expect(res.body).toEqual(require('./specData/reviewForP71701.json'));
+      })
+  ));
+
   it.todo('response with empty json and status of 204 when there is no reviews for a product, product_id=3');
-  it.todo('response should not contain reported reviews, product_id=3134, no id=18199');
-  describe('response with correct pagination and sorting for product_id=1000011', () => {
-    it.todo('should use default page 0, count 5 and sort relevance when not provided');
-    it.todo('should response with 2 reviews and page 1');
-    it.todo('should response with 5 reviews sorted by newest');
-    it.todo('should response with 5 reviews sorted by helpfulness');
+
+  it('response should not contain reported reviews', () => (
+    request
+      .get('/reviews')
+      .query({ product_id: 3134, count: 20 })
+      .then((res) => {
+        const data = res.body;
+        data.results.length = 9;
+        const reviewIds = data.results.map((reviewObj) => reviewObj.review_id);
+        expect(reviewIds).toContain(18198);
+        expect(reviewIds).not.toContain(18199);
+      })
+  ));
+
+  describe('response with correct pagination and sorting', () => {
+    const query = { product_id: 1000011 };
+    it('should use default page 0, count 5 and sort relevance when not provided in query', () => (
+      request
+        .get('/reviews')
+        .query(query)
+        .then((res) => {
+          const data = res.body;
+          expect(data.page).toBe(0);
+          expect(data.count).toBe(5);
+          expect(data.results.length).toBe(5);
+          expect(data.results[0].review_id).toBe(5774940);
+          expect(data.results[4].review_id).toBe(5774944);
+        })
+    ));
+
+    it('should response with 5 reviews sorted by newest', () => {
+      query.sort = 'newest';
+      return request
+        .get('/reviews')
+        .query(query)
+        .then((res) => {
+          const data = res.body;
+          const topReviewDate = new Date(data.results[0].date);
+          const secondReviewDate = new Date(data.results[1].date);
+          expect(topReviewDate > secondReviewDate).toBeTruthy();
+        });
+    });
+
+    it('should response with 5 reviews sorted by helpfulness', () => {
+      query.sort = 'helpful';
+      return request
+        .get('/reviews')
+        .query(query)
+        .then((res) => {
+          const data = res.body;
+          const topReviewHelpfulness = data.results[0].helpfulness;
+          const secondReviewHelpfulness = data.results[1].helpfulness;
+          expect(topReviewHelpfulness > secondReviewHelpfulness).toBeTruthy();
+        });
+    });
+
+    it('should response with 2 reviews and page 1', () => {
+      query.sort = '';
+      query.page = 2;
+      query.count = 2;
+      return request
+        .get('/reviews')
+        .query(query)
+        .then((res) => {
+          const data = res.body;
+          expect(data.page).toBe(1);
+          expect(data.count).toBe(2);
+          expect(data.results.length).toBe(2);
+          expect(data.results[0].review_id).toBe(5774942);
+          expect(data.results[1].review_id).toBe(5774943);
+        });
+    });
   });
 });
 
 describe('GET /reviews/meta', () => {
-  describe('response with product_id=71701', () => {
-    it.todo('should have status of 200');
-    it.todo('should be in json format');
-    it.todo('should contain correctly formatted json');
-  });
-  it.todo('should not counting reported reviews, product_id=356 no id=1973');
+  it('resonse with correct json and status of 200', () => (
+    request
+      .get('/reviews/meta')
+      .query({ product_id: 71701 })
+      .then((res) => {
+        expect(res.statusCode).toBe(200);
+        expect(res.headers['content-type']).toMatch(/json/);
+        expect(res.body).toEqual(require('./specData/reviewMetaForP71701.json'));
+      })
+  ));
+  it('should not include reported reviews, product_id=356 no id=1973', () => (
+    request
+      .get('/reviews/meta')
+      .query({ product_id: 356 })
+      .then((res) => {
+        const data = res.body;
+        const reviewCount = Number(data.recommended.true) + Number(data.recommended.true);
+        const totalReviews = pool.query('SELECT COUNT(*) FROM hr_sdc.reviews WHERE product_id=356');
+        expect(reviewCount).not.toBe(totalReviews);
+      })
+  ));
 });
 
 describe('POST /reviews/:product_id', () => {
