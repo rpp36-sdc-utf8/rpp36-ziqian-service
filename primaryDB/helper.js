@@ -12,7 +12,6 @@ const convertCharObj = (arr, name, value, id) => (
       value: item[value],
     };
     resultObj[item[name]] = tempObj;
-    console.log(resultObj);
     return resultObj;
   }, {})
 );
