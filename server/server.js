@@ -17,7 +17,7 @@ app.route('/reviews')
     const options = {
       productId: product_id,
       page: page - 1 || 0,
-      count: count || 5,
+      count: Number(count) || 5,
       sort: sort || 'relavent',
     };
 
@@ -26,7 +26,7 @@ app.route('/reviews')
         let data = {
           product: product_id,
           page: page - 1 || 0,
-          count: count || 5,
+          count: Number(count) || 5,
         };
         data.results = results;
         res.status(200).json(data);
