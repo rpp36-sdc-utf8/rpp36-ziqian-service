@@ -56,7 +56,7 @@ exports.fetchReviews = (options) => {
         delete photo.review_id;
         review.photos = photo;
         delete review.product_id;
-        review.date = Date(review.date);
+        review.date = new Date(Number(review.date));
 
         // updated reivew
         reviews[i] = review;
