@@ -5,7 +5,14 @@ const pool = require('../primaryDB/index');
 const request = supertest(server);
 
 afterAll(() => {
-  pool.end();
+  const query = `
+    SELECT setval( pg_get_serial_sequence('hr_sdc.reviews', 'id'), 5774952);
+    SELECT setval( pg_get_serial_sequence('hr_sdc.characteristic_reviews', 'id'), 19327575);
+    SELECT setval( pg_get_serial_sequence('hr_sdc.photos', 'id'), 2742540);
+    `;
+  return pool
+    .query(query)
+    .then(() => pool.end());
 });
 
 describe('Test the root path', () => {
@@ -130,11 +137,74 @@ describe('GET /reviews/meta', () => {
   ));
 });
 
-describe('POST /reviews/:product_id', () => {
-  it.todo('response Created and status of 201');
-  it.todo('should add to reviews table at the end');
-  it.todo('should add to characteristic_review table at the end');
-  it.todo('should add to photos table at the end when photo is in the review');
+describe('POST /reviews', () => {
+  describe.only('send json with photo', () => {
+    afterAll(() => (
+      pool
+        .query('SELECT max(id) FROM hr_sdc.reviews')
+        .then(async (res) => {
+          console.log(res.rows[0].max);
+          const reviewId = res.rows[0].max;
+          // delete testing data from db
+          await pool.query(`DELETE FROM hr_sdc.characteristic_reviews WHERE review_id between 5774953 and ${reviewId}`);
+          await pool.query(`DELETE FROM hr_sdc.photos WHERE review_id between 5774953 and ${reviewId}`);
+          await pool.query(`DELETE FROM hr_sdc.reviews WHERE id between 5774953 and ${reviewId}`);
+
+          const query = `
+          SELECT setval( pg_get_serial_sequence('hr_sdc.reviews', 'id'), 5774952);
+          SELECT setval( pg_get_serial_sequence('hr_sdc.characteristic_reviews', 'id'), 19327575);
+          SELECT setval( pg_get_serial_sequence('hr_sdc.photos', 'id'), 2742540);
+          `;
+          await pool.query(query);
+        })
+        // .then(() => (pool.end()));
+    ));
+
+    it('response Created and status of 201', () => (
+      request
+        .post('/reviews')
+        .send(require('./specData/postWithPhotoForP71701'))
+        .then(async (res) => {
+          expect(res.statusCode).toBe(201);
+          expect(res.body).toBe('Created');
+        })
+    ));
+    it('should add to reviews table at the end', async () => {
+      const queryStr = 'SELECT * FROM hr_sdc.reviews WHERE id=(SELECT max(id) FROM hr_sdc.reviews)';
+      const addedReview = await pool.query(queryStr);
+      expect(addedReview.rows[0].reviewer_name).toBe('test2');
+    });
+
+    it('should add to characteristic_reviews table at the end', async () => {
+      // request
+      //   .post('/reviews')
+      //   .send(require('./specData/postNoPhotoForP71701'))
+      //   .then(async (res) => {
+          const queryStr = 'SELECT value FROM hr_sdc.characteristic_reviews WHERE id=(SELECT max(id) FROM hr_sdc.reviews)';
+          const charReviewValues = await pool.query(queryStr);
+          const valuesArr = charReviewValues.rows.reduce((array, item) => {
+            const temp = item.value;
+            array.push(temp);
+            return array;
+          }, []);
+          expect(valuesArr.length).toBe(4);
+          expect(valuesArr).toContain(3);
+          expect(valuesArr).toContain(2);
+          expect(valuesArr).toContain(4);
+        // })
+    });
+    it('should add to photos table at the end when photo is in the review', async () => {
+      // request
+      //   .post('/reviews')
+      //   .send(require('./specData/postWithPhotoForP71701'))
+      //   .then(async (res) => {
+          const queryStr = 'SELECT url FROM hr_sdc.photos WHERE review_id=(SELECT max(id) FROM hr_sdc.reviews)';
+          const photoUrl = await pool.query(queryStr);
+          console.log(photoUrl.rows);
+          expect(photoUrl.rows[0].url).toBe('urlplaceholder/review_5_photo_number_1.jpg');
+        // })
+      });
+  })
   it.todo('should NOT add to photos table if no photos is in the review');
   it.todo('should response with 404 when review does not contain all required field');
 });
