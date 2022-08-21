@@ -1,5 +1,5 @@
-const pool = require('./index');
 const format = require('pg-format');
+const pool = require('./index');
 const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
@@ -8,10 +8,6 @@ const fetchPhotos = (reviewId) => {
     .query(queryStr)
     .then((data) => data.rows)
     .catch((err) => { throw err; });
-};
-
-const fetchCharacteristic = (productId) => {
-  // fetch chars and construct into an obj to return
 };
 
 exports.fetchReviews = (options) => {
@@ -31,7 +27,7 @@ exports.fetchReviews = (options) => {
   }
 
   const queryStr = `
-    SELECT *
+    SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
     FROM hr_sdc.reviews
     WHERE product_id=${productId}
     AND reported=false
@@ -44,23 +40,23 @@ exports.fetchReviews = (options) => {
     .query(queryStr)
     .then(async (data) => {
       // make a copy of reviews data
-      let reviews = data.rows.slice();
+      const reviews = data.rows.slice();
 
       // get all photos for reviews
-      const photosPromises = reviews.map((review) => fetchPhotos(review.id));
+      const photosPromises = reviews.map((review) => fetchPhotos(review.review_id));
       const photos = await Promise.all(photosPromises)
         .then((photo) => photo)
         .catch((err) => { throw err; });
 
       for (let i = 0; i < reviews.length; i ++) {
-        let review = reviews[i];
-        let photo = photos[i];
+        const review = reviews[i];
+        const photo = photos[i];
 
         // clean up data
         delete photo.review_id;
         review.photos = photo;
         delete review.product_id;
-        review.date = Date(review.date);
+        review.date = new Date(Number(review.date));
 
         // updated reivew
         reviews[i] = review;
@@ -90,16 +86,15 @@ exports.fetchReviewsMeta = (productId) => {
     GROUP BY recommend;
     `;
   const charQueryStr = `
-    SELECT name, avg(value) AS value
+    SELECT characteristic_id, name, avg(value) AS value
     FROM hr_sdc.characteristic_reviews rv
     JOIN hr_sdc.characteristics char on char.id=rv.characteristic_id
     JOIN hr_sdc.reviews r on r.id=rv.review_id where r.reported=false and char.product_id=${productId}
-    GROUP BY name;
+    GROUP BY characteristic_id, name;
     `;
-  // query to fetch all reviews with column rating, recommended
+
   const ratingQuery = pool.query(ratingQueryStr);
   const recommendedQuery = pool.query(recommendQueryStr);
-  // query to fetch characteristics name, total, count
   const charQuery = pool.query(charQueryStr);
 
   return Promise.all([ratingQuery, recommendedQuery, charQuery])
@@ -107,9 +102,8 @@ exports.fetchReviewsMeta = (productId) => {
       const [rating, recommend, char] = result;
       const ratings = helper.convertArrToObj(rating.rows, 'rating', 'count');
       const recommended = helper.convertArrToObj(recommend.rows, 'recommend', 'count');
-      const characteristics = helper.convertArrToObj(char.rows, 'name', 'value');
+      const characteristics = helper.convertCharObj(char.rows, 'name', 'value', 'characteristic_id');
 
-      console.log(ratings, recommended, characteristics);
       return {
         ratings,
         recommended,
@@ -123,10 +117,6 @@ exports.fetchReviewsMeta = (productId) => {
 };
 
 exports.insertToReview = (data) => {
-  // const photos = JSON.parse(data.photos);
-  // const characteristics = JSON.parse(data.characteristics);
-
-  // construct query string
   const query = {
     text: `
       INSERT INTO hr_sdc.reviews
@@ -182,6 +172,18 @@ exports.insertToPhotos = (data, reviewId) => {
     .catch((err) => { throw err; });
 };
 
-exports.updateReview = (reviewId, options) => {
-  // update helpfulness/report on review matching id
+exports.updateReview = (reviewId, column) => {
+  let query;
+  if (column === 'helpfulness') {
+    query = `UPDATE hr_sdc.reviews SET helpfulness=helpfulness+1 WHERE id=${reviewId}`;
+  }
+  if (column === 'reported') {
+    query = `UPDATE hr_sdc.reviews SET reported=true WHERE id=${reviewId}`;
+  }
+  return pool
+    .query(query)
+    .catch((err) => {
+      console.log(err);
+      throw err;
+    });
 };

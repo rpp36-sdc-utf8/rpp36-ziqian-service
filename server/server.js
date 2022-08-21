@@ -16,8 +16,8 @@ app.route('/reviews')
     const { product_id, page, count, sort } = req.query;
     const options = {
       productId: product_id,
-      page: page || 0,
-      count: count || 5,
+      page: page - 1 || 0,
+      count: Number(count) || 5,
       sort: sort || 'relavent',
     };
 
@@ -25,11 +25,10 @@ app.route('/reviews')
       .then((results) => {
         let data = {
           product: product_id,
-          page: page || 0,
-          count: count || 5,
+          page: page - 1 || 0,
+          count: Number(count) || 5,
         };
         data.results = results;
-        console.log('data', data);
         res.status(200).json(data);
       })
       .catch((err) => res.status(500).json(err));
@@ -64,28 +63,24 @@ app.get('/reviews/meta', (req, res) => {
 
 app.put('/reviews/:review_id/helpful', (req, res) => {
   const { review_id } = req.params;
-  const query = 'helpfulness';
+  const column = 'helpfulness';
 
-  // res.status(200).json(req.params);
-
-  // Models.updateOne(review_id, query)
-  //   .then(() => {
-  //     res.send(201).send('Updated');
-  //   })
-  //   .catch((err) => res.status(500).json(err));
+  Models.updateReview(review_id, column)
+    .then(() => {
+      res.status(201).send('Updated');
+    })
+    .catch((err) => res.status(500).json(err));
 });
 
 app.put('/reviews/:review_id/report', (req, res) => {
   const { review_id } = req.params;
-  const query = 'report';
+  const column = 'reported';
 
-  // res.status(200).json(req.params);
-
-  // Models.updateOne(review_id, query)
-  //   .then(() => {
-  //     res.send(201).send('Updated');
-  //   })
-  //   .catch((err) => res.status(500).json(err));
+  Models.updateReview(review_id, column)
+    .then(() => {
+      res.status(201).send('Updated');
+    })
+    .catch((err) => res.status(500).json(err));
 });
 
 module.exports = app;

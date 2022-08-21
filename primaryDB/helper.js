@@ -5,6 +5,19 @@ const convertArrToObj = (arr, key, value) => (
   }, {})
 );
 
+const convertCharObj = (arr, name, value, id) => (
+  arr.reduce((resultObj, item) => {
+    const tempObj = {
+      id: item[id],
+      value: item[value],
+    };
+    resultObj[item[name]] = tempObj;
+    console.log(resultObj);
+    return resultObj;
+  }, {})
+);
+
 module.exports = {
   convertArrToObj,
+  convertCharObj,
 };
