@@ -150,7 +150,7 @@ exports.insertToCharReview = (data, reviewId) => {
 
   return pool
     .query(format(query.text, query.values))
-    .then((res) => res.rows[0].id)
+    .then((res) => res.rows)
     .catch((err) => { throw err; });
 };
 

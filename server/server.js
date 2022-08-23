@@ -45,7 +45,7 @@ app.route('/reviews')
         if (photos.length !== 0) {
           result.photoId = await Models.insertToPhotos(photos, reviewId);
         }
-        res.status(201).json(result);
+        res.status(201).send('Created');
       })
       .catch((err) => res.status(500).json(err));
   });
