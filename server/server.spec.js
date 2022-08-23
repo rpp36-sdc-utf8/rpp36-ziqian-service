@@ -4,16 +4,39 @@ const pool = require('../primaryDB/index');
 
 const request = supertest(server);
 
-afterAll(() => {
-  const query = `
+const clearTestData = () => (
+  pool
+    .query('SELECT max(id) FROM hr_sdc.reviews')
+    .then(async (res) => {
+      const reviewId = res.rows[0].max;
+
+      // delete testing data from db
+      const queryToDeleteTestData = `
+        DELETE FROM hr_sdc.characteristic_reviews WHERE review_id between 5774953 and ${reviewId};
+        DELETE FROM hr_sdc.photos WHERE review_id between 5774953 and ${reviewId};
+        DELETE FROM hr_sdc.reviews WHERE id between 5774953 and ${reviewId};
+      `;
+      await pool.query(queryToDeleteTestData);
+    })
+    .catch((err) => { throw err; })
+);
+
+const syncSerialId = () => {
+  const queryToSyncSerialId = `
     SELECT setval( pg_get_serial_sequence('hr_sdc.reviews', 'id'), 5774952);
     SELECT setval( pg_get_serial_sequence('hr_sdc.characteristic_reviews', 'id'), 19327575);
     SELECT setval( pg_get_serial_sequence('hr_sdc.photos', 'id'), 2742540);
-    `;
+  `;
   return pool
-    .query(query)
-    .then(() => pool.end());
-});
+    .query(queryToSyncSerialId)
+    .catch((err) => { throw err; });
+};
+
+afterAll(() => (
+  syncSerialId()
+    .then(() => pool.end())
+    .catch((err) => { console.log(err); });
+));
 
 describe('Test the root path', () => {
   test('It should response the GET method', () => (
@@ -124,6 +147,7 @@ describe('GET /reviews/meta', () => {
         expect(res.body).toEqual(require('./specData/reviewMetaForP71701.json'));
       })
   ));
+
   it('should not include reported reviews, product_id=356 no id=1973', () => (
     request
       .get('/reviews/meta')
@@ -138,29 +162,10 @@ describe('GET /reviews/meta', () => {
 
 describe('POST /reviews', () => {
   describe('send json with photo', () => {
-    // reset database to before inserting test data
     afterAll(() => (
-      pool
-        .query('SELECT max(id) FROM hr_sdc.reviews')
-        .then(async (res) => {
-          const reviewId = res.rows[0].max;
-
-          // delete testing data from db
-          const queryToDeleteTestData = `
-            DELETE FROM hr_sdc.characteristic_reviews WHERE review_id between 5774953 and ${reviewId};
-            DELETE FROM hr_sdc.photos WHERE review_id between 5774953 and ${reviewId};
-            DELETE FROM hr_sdc.reviews WHERE id between 5774953 and ${reviewId};
-          `;
-          await pool.query(queryToDeleteTestData);
-
-          // reset serial number to last item after deleting test data
-          const queryToSyncSerialId = `
-            SELECT setval( pg_get_serial_sequence('hr_sdc.reviews', 'id'), 5774952);
-            SELECT setval( pg_get_serial_sequence('hr_sdc.characteristic_reviews', 'id'), 19327575);
-            SELECT setval( pg_get_serial_sequence('hr_sdc.photos', 'id'), 2742540);
-          `;
-          await pool.query(queryToSyncSerialId);
-        })
+      clearTestData()
+        .then(() => syncSerialId())
+        .catch((err) => console.log(err))
     ));
 
     it('should responde with Created and status of 201', () => (
@@ -194,14 +199,24 @@ describe('POST /reviews', () => {
     });
 
     it('should add to photos table at the end when photo is in the review', async () => {
-      const queryStr = 'SELECT url FROM hr_sdc.photos WHERE review_id=(SELECT max(id) FROM hr_sdc.reviews)';
-      const photoUrl = await pool.query(queryStr);
-      expect(photoUrl.rows[0].url).toBe('urlplaceholder/review_5_photo_number_1.jpg');
+      const queryStr = 'SELECT id, url FROM hr_sdc.photos WHERE review_id=(SELECT max(id) FROM hr_sdc.reviews)';
+      const addedPhotoData = await pool.query(queryStr);
+      expect(addedPhotoData.rows[0].id).toBe(2742541);
+      expect(addedPhotoData.rows[0].url).toBe('urlplaceholder/review_5_photo_number_1.jpg');
     });
   });
 
-  it.todo('should NOT add to photos table if no photos is in the review');
-  it.todo('should response with 404 when review does not contain all required field');
+  it('should NOT add to photos table if no photos is in the review', () => (
+    request
+      .post('/reviews')
+      .send(require('./specData/postNoPhotoForP71701'))
+      .then(async (res) => {
+        const maxPhotoId = await pool.query('SELECT max(id) FROM hr_sdc.photos');
+        expect(maxPhotoId.rows[0].max).toBe(2742540);
+      })
+  ));
+
+  it.todo('should response with 500 when review does not contain all required field');
 });
 
 describe('PUT /reviews/:review_id/helpful', () => {
