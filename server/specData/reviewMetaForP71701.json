@@ -1,18 +1,17 @@
 {
-  "ratings": {
-      "1": "2",
-      "4": "4",
-      "5": "1"
-  },
-  "recommended": {
-      "false": "3",
-      "true": "4"
-  },
-  "characteristics": {
-      "Quality": {
-          "id": 239725,
-          "value": "3.2000000000000000"
-      }
-  },
-  "product_id": "71701"
+    "ratings": {
+        "1": "2",
+        "5": "1"
+    },
+    "recommended": {
+        "false": "2",
+        "true": "1"
+    },
+    "characteristics": {
+        "Quality": {
+            "id": 239725,
+            "value": "3.6666666666666667"
+        }
+    },
+    "product_id": "71701"
 }

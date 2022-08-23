@@ -1,0 +1,16 @@
+{
+  "product_id": 71701,
+  "rating": 4,
+  "summary": "test1",
+  "body": "test1",
+  "name": "test1",
+  "email": "test1@test1.com",
+  "photos": [],
+  "characteristics": {
+      "240595": 3,
+      "240596": 4,
+      "240597": 2,
+      "240598": 3
+  },
+  "recommend": false
+}
