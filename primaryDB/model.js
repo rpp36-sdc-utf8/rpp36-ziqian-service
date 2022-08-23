@@ -175,10 +175,10 @@ exports.insertToPhotos = (data, reviewId) => {
 exports.updateReview = (reviewId, column) => {
   let query;
   if (column === 'helpfulness') {
-    query = `UPDATE hr_sdc.reviews SET helpfulness=helpfulness+1 WHERE id=${reviewId}`;
+    query = `UPDATE hr_sdc.reviews SET helpfulness=helpfulness+1 WHERE id=${reviewId};`;
   }
   if (column === 'reported') {
-    query = `UPDATE hr_sdc.reviews SET reported=true WHERE id=${reviewId}`;
+    query = `UPDATE hr_sdc.reviews SET reported=true WHERE id=${reviewId};`;
   }
   return pool
     .query(query)

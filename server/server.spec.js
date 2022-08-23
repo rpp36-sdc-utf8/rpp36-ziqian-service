@@ -34,30 +34,7 @@ const syncSerialId = () => {
     .catch((err) => { throw err; });
 };
 
-// afterAll(() => (
-//   clearTestData()
-//     .then(() => {
-//       return syncSerialId()
-//         .then(async () => {
-//           console.log('here');
-//           await pool.end;
-//         });
-//     })
-//     .catch((err) => { console.log(err); })
-// ));
-
-afterAll(async () => {
-  await pool.end();
-});
-
-// afterAll(() => {
-//   console.log('here');
-//   return pool.end();
-// });
-  // syncSerialId()
-  //   .then(() => pool.end())
-  //   .catch((err) => { console.log(err); })
-// ));
+afterAll(() => pool.end());
 
 describe('Test the root path', () => {
   test('It should response the GET method', () => (
@@ -80,8 +57,6 @@ describe('GET /reviews', () => {
         expect(res.body).toEqual(require('./specData/reviewForP71701.json'));
       })
   ));
-
-  it.todo('response with empty json and status of 204 when there is no reviews for a product, product_id=3');
 
   it('response should not contain reported reviews', () => (
     request
@@ -237,7 +212,7 @@ describe('POST /reviews', () => {
       })
   ));
 
-  it('should response with 500 when review does not contain all required field', () => {
+  it('should response with 500 when review does not contain all required field', () => (
     request
       .post('/reviews')
       .send({"product_id": 71701,
@@ -246,31 +221,46 @@ describe('POST /reviews', () => {
         "body": "test2",
         "name": "test2",
       })
-      .expect(500);
-  });
+      .expect(500)
+  ));
 });
 
-describe.only('PUT /reviews/:review_id/helpful', () => {
+describe('PUT /reviews/:review_id/helpful', () => {
   afterAll(() => (
-    pool.query('UPDATE hr_sdc.reviews SET helpfulness=helpfulness-1 WHERE id=1000000;')
+    pool.query('UPDATE hr_sdc.reviews SET helpfulness=14 WHERE id=5774952;')
   ));
 
-  it('should respond Updated with status of 201', () => {
+  it('should respond Updated with status of 201', () => (
     request
-      .put('/reviews/1000000/helpful')
+      .put('/reviews/5774952/helpful')
       .expect(201)
       .then((res) => {
         expect(res.text).toBe('Updated');
-      });
-  });
+      })
+  ));
 
   it('should update database on the helpfulness of the review_id in the route', async () => {
-    const helpful = await pool.query('SELECT helpfulness FROM hr_sdc.reviews WHERE id=1000000;');
-    expect(helpful.rows[0].helpfulness).toBe(12);
+    const helpful = await pool.query('SELECT helpfulness FROM hr_sdc.reviews WHERE id=5774952;');
+    expect(helpful.rows[0].helpfulness).toBe(15);
   });
 });
 
 describe('PUT /reviews/:review_id/report', () => {
-  it.todo('response Updated with status of 201');
-  it.todo('should update database on the report to true of the review_id in the route');
+  afterAll(async () => {
+    pool.query('UPDATE hr_sdc.reviews SET reported=false WHERE id=5774952;');
+  });
+
+  it('should respond Updated with status of 201', () => (
+    request
+      .put('/reviews/5774952/report')
+      .expect(201)
+      .then((res) => {
+        expect(res.text).toBe('Updated');
+      })
+  ));
+
+  it('should update database on the report to true of the review_id in the route', async () => {
+    const reported = await pool.query('SELECT reported FROM hr_sdc.reviews WHERE id=5774952;')
+    expect(reported.rows[0].reported).toBe(true);
+  });
 });
