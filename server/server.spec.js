@@ -9,14 +9,16 @@ const clearTestData = () => (
     .query('SELECT max(id) FROM hr_sdc.reviews')
     .then(async (res) => {
       const reviewId = res.rows[0].max;
-
-      // delete testing data from db
-      const queryToDeleteTestData = `
-        DELETE FROM hr_sdc.characteristic_reviews WHERE review_id between 5774953 and ${reviewId};
-        DELETE FROM hr_sdc.photos WHERE review_id between 5774953 and ${reviewId};
-        DELETE FROM hr_sdc.reviews WHERE id between 5774953 and ${reviewId};
-      `;
-      await pool.query(queryToDeleteTestData);
+      if (reviewId > 5774952) {
+        // delete testing data from db
+        const queryToDeleteTestData = `
+          DELETE FROM hr_sdc.characteristic_reviews WHERE review_id between 5774953 and ${reviewId};
+          DELETE FROM hr_sdc.photos WHERE review_id between 5774953 and ${reviewId};
+          DELETE FROM hr_sdc.reviews WHERE id between 5774953 and ${reviewId};
+        `;
+        return pool.query(queryToDeleteTestData);
+      }
+      return reviewId;
     })
     .catch((err) => { throw err; })
 );
@@ -32,11 +34,30 @@ const syncSerialId = () => {
     .catch((err) => { throw err; });
 };
 
-afterAll(() => (
-  syncSerialId()
-    .then(() => pool.end())
-    .catch((err) => { console.log(err); });
-));
+// afterAll(() => (
+//   clearTestData()
+//     .then(() => {
+//       return syncSerialId()
+//         .then(async () => {
+//           console.log('here');
+//           await pool.end;
+//         });
+//     })
+//     .catch((err) => { console.log(err); })
+// ));
+
+afterAll(async () => {
+  await pool.end();
+});
+
+// afterAll(() => {
+//   console.log('here');
+//   return pool.end();
+// });
+  // syncSerialId()
+  //   .then(() => pool.end())
+  //   .catch((err) => { console.log(err); })
+// ));
 
 describe('Test the root path', () => {
   test('It should response the GET method', () => (
@@ -161,13 +182,13 @@ describe('GET /reviews/meta', () => {
 });
 
 describe('POST /reviews', () => {
-  describe('send json with photo', () => {
-    afterAll(() => (
-      clearTestData()
-        .then(() => syncSerialId())
-        .catch((err) => console.log(err))
-    ));
+  afterAll(() => (
+    clearTestData()
+      .then(() => syncSerialId())
+      .catch((err) => console.log(err))
+  ));
 
+  describe('send json with photo', () => {
     it('should responde with Created and status of 201', () => (
       request
         .post('/reviews')
@@ -212,16 +233,41 @@ describe('POST /reviews', () => {
       .send(require('./specData/postNoPhotoForP71701'))
       .then(async (res) => {
         const maxPhotoId = await pool.query('SELECT max(id) FROM hr_sdc.photos');
-        expect(maxPhotoId.rows[0].max).toBe(2742540);
+        expect(maxPhotoId.rows[0].max).toBe(2742541);
       })
   ));
 
-  it.todo('should response with 500 when review does not contain all required field');
+  it('should response with 500 when review does not contain all required field', () => {
+    request
+      .post('/reviews')
+      .send({"product_id": 71701,
+        "rating": 4,
+        "summary": "test2",
+        "body": "test2",
+        "name": "test2",
+      })
+      .expect(500);
+  });
 });
 
-describe('PUT /reviews/:review_id/helpful', () => {
-  it.todo('response Updated with status of 201');
-  it.todo('should update database on the helpfulness of the review_id in the route');
+describe.only('PUT /reviews/:review_id/helpful', () => {
+  afterAll(() => (
+    pool.query('UPDATE hr_sdc.reviews SET helpfulness=helpfulness-1 WHERE id=1000000;')
+  ));
+
+  it('should respond Updated with status of 201', () => {
+    request
+      .put('/reviews/1000000/helpful')
+      .expect(201)
+      .then((res) => {
+        expect(res.text).toBe('Updated');
+      });
+  });
+
+  it('should update database on the helpfulness of the review_id in the route', async () => {
+    const helpful = await pool.query('SELECT helpfulness FROM hr_sdc.reviews WHERE id=1000000;');
+    expect(helpful.rows[0].helpfulness).toBe(12);
+  });
 });
 
 describe('PUT /reviews/:review_id/report', () => {
