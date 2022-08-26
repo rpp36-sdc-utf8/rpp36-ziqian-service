@@ -23,7 +23,7 @@ exports.fetchReviews = (options) => {
       sortStr = 'helpfulness DESC';
       break;
     default:
-      sortStr = 'id';
+      sortStr = 'date DESC, helpfulness DESC';
   }
 
   const queryStr = `

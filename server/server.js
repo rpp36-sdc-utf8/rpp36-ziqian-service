@@ -7,10 +7,6 @@ app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
 app.route('/reviews')
   .get((req, res) => {
     const { product_id, page, count, sort } = req.query;

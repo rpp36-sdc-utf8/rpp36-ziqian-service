@@ -34,27 +34,18 @@ const syncSerialId = () => {
     .catch((err) => { throw err; });
 };
 
+// close pool after all test is complete
 afterAll(() => pool.end());
-
-describe('Test the root path', () => {
-  test('It should response the GET method', () => (
-    request
-      .get('/')
-      .then((response) => {
-        expect(response.statusCode).toBe(200);
-      })
-  ));
-});
 
 describe('GET /reviews', () => {
   it('response with correct json and status of 200', () => (
     request
       .get('/reviews')
-      .query({ product_id: 71701 })
+      .query({ product_id: 105 })
       .then((res) => {
         expect(res.statusCode).toBe(200);
         expect(res.headers['content-type']).toMatch(/json/);
-        expect(res.body).toEqual(require('./specData/reviewForP71701.json'));
+        expect(res.body).toEqual(require('./specData/reviewForP105.json'));
       })
   ));
 
@@ -82,8 +73,8 @@ describe('GET /reviews', () => {
           expect(data.page).toBe(0);
           expect(data.count).toBe(5);
           expect(data.results.length).toBe(5);
-          expect(data.results[0].review_id).toBe(5774940);
-          expect(data.results[4].review_id).toBe(5774944);
+          expect(data.results[0].review_id).toBe(5774946);
+          expect(data.results[4].review_id).toBe(5774947);
         })
     ));
 
@@ -125,8 +116,8 @@ describe('GET /reviews', () => {
           expect(data.page).toBe(1);
           expect(data.count).toBe(2);
           expect(data.results.length).toBe(2);
-          expect(data.results[0].review_id).toBe(5774942);
-          expect(data.results[1].review_id).toBe(5774943);
+          expect(data.results[0].review_id).toBe(5774940);
+          expect(data.results[1].review_id).toBe(5774951);
         });
     });
   });
