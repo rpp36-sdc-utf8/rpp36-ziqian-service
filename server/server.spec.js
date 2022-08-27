@@ -34,27 +34,18 @@ const syncSerialId = () => {
     .catch((err) => { throw err; });
 };
 
+// close pool after all test is complete
 afterAll(() => pool.end());
-
-describe('Test the root path', () => {
-  test('It should response the GET method', () => (
-    request
-      .get('/')
-      .then((response) => {
-        expect(response.statusCode).toBe(200);
-      })
-  ));
-});
 
 describe('GET /reviews', () => {
   it('response with correct json and status of 200', () => (
     request
       .get('/reviews')
-      .query({ product_id: 71701 })
+      .query({ product_id: 105 })
       .then((res) => {
         expect(res.statusCode).toBe(200);
         expect(res.headers['content-type']).toMatch(/json/);
-        expect(res.body).toEqual(require('./specData/reviewForP71701.json'));
+        expect(res.body).toEqual(require('./specData/reviewForP105.json'));
       })
   ));
 
@@ -73,17 +64,22 @@ describe('GET /reviews', () => {
 
   describe('response with correct pagination and sorting', () => {
     const query = { product_id: 1000011 };
+    let defaultSortResponse;
+    let newestSortResponse;
+    let helpfulnessSortResponse;
+
     it('should use default page 0, count 5 and sort relevance when not provided in query', () => (
       request
         .get('/reviews')
         .query(query)
         .then((res) => {
-          const data = res.body;
-          expect(data.page).toBe(0);
-          expect(data.count).toBe(5);
-          expect(data.results.length).toBe(5);
-          expect(data.results[0].review_id).toBe(5774940);
-          expect(data.results[4].review_id).toBe(5774944);
+          defaultSortResponse = res.body;
+          // defaultSortResponse = data;
+          expect(defaultSortResponse.page).toBe(0);
+          expect(defaultSortResponse.count).toBe(5);
+          expect(defaultSortResponse.results.length).toBe(5);
+          expect(defaultSortResponse.results[0].review_id).toBe(5774947);
+          expect(defaultSortResponse.results[4].review_id).toBe(5774943);
         })
     ));
 
@@ -93,10 +89,13 @@ describe('GET /reviews', () => {
         .get('/reviews')
         .query(query)
         .then((res) => {
-          const data = res.body;
-          const topReviewDate = new Date(data.results[0].date);
-          const secondReviewDate = new Date(data.results[1].date);
-          expect(topReviewDate > secondReviewDate).toBeTruthy();
+          // const data = res.body;
+          newestSortResponse = res.body;
+          for (let i = 0; i < newestSortResponse.results.length - 1; i ++) {
+            const newerReviewDate = new Date(newestSortResponse.results[i].date);
+            const olderReviewDate = new Date(newestSortResponse.results[i + 1].date);
+            expect(newerReviewDate > olderReviewDate).toBeTruthy();
+          }
         });
     });
 
@@ -106,11 +105,19 @@ describe('GET /reviews', () => {
         .get('/reviews')
         .query(query)
         .then((res) => {
-          const data = res.body;
-          const topReviewHelpfulness = data.results[0].helpfulness;
-          const secondReviewHelpfulness = data.results[1].helpfulness;
-          expect(topReviewHelpfulness > secondReviewHelpfulness).toBeTruthy();
+          // const data = res.body;
+          helpfulnessSortResponse = res.body;
+          for (let i = 0; i < helpfulnessSortResponse.results.length - 1; i ++) {
+            const higherReviewHelpfulness = helpfulnessSortResponse.results[i].helpfulness;
+            const lowerReviewHelpfulness = helpfulnessSortResponse.results[i + 1].helpfulness;
+            expect(higherReviewHelpfulness > lowerReviewHelpfulness).toBeTruthy();
+          }
         });
+    });
+
+    it('should sort differently with relevance(default) to sorted by helpfulness or newest', () => {
+      expect(defaultSortResponse).not.toEqual(helpfulnessSortResponse);
+      expect(defaultSortResponse).not.toEqual(newestSortResponse);
     });
 
     it('should response with 2 reviews and page 1', () => {

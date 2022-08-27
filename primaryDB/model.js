@@ -3,7 +3,7 @@ const pool = require('./index');
 const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
-  const queryStr = `SELECT * FROM hr_sdc.photos WHERE review_id=${reviewId};`;
+  const queryStr = `SELECT id, url FROM hr_sdc.photos WHERE review_id=${reviewId};`;
   return pool
     .query(queryStr)
     .then((data) => data.rows)
@@ -23,24 +23,35 @@ exports.fetchReviews = (options) => {
       sortStr = 'helpfulness DESC';
       break;
     default:
-      sortStr = 'id';
+      sortStr = `
+        (helpfulness / (SELECT max(helpfulness) FROM reviews_${productId}) * 0.7
+        + date / (SELECT max(date) FROM reviews_${productId}) * 0.3) DESC
+      `; // helpfulness weighs 70% and date weighs 30%
   }
 
-  const queryStr = `
-    SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
+  const viewQuery = `
+    CREATE OR REPLACE TEMP VIEW reviews_${productId} AS
+    SELECT *
     FROM hr_sdc.reviews
     WHERE product_id=${productId}
-    AND reported=false
+    AND reported=false;
+  `;
+
+  const orderByquery = `
+    SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
+    FROM reviews_${productId}
     ORDER BY ${sortStr}
     LIMIT ${count}
     OFFSET ${page * count};
   `;
 
+  const queryStr = viewQuery + orderByquery;
+
   return pool
     .query(queryStr)
     .then(async (data) => {
       // make a copy of reviews data
-      const reviews = data.rows.slice();
+      const reviews = data[1].rows.slice();
 
       // get all photos for reviews
       const photosPromises = reviews.map((review) => fetchPhotos(review.review_id));
@@ -52,10 +63,8 @@ exports.fetchReviews = (options) => {
         const review = reviews[i];
         const photo = photos[i];
 
-        // clean up data
-        delete photo.review_id;
+        // construct each review
         review.photos = photo;
-        delete review.product_id;
         review.date = new Date(Number(review.date));
 
         // updated reivew
