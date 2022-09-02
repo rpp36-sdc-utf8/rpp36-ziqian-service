@@ -1,9 +1,18 @@
 const { Pool } = require('pg');
 
+let database;
+if (process.env.NODE_ENV === 'development') {
+  database = 'test';
+} else {
+  database = 'ziqianli';
+}
+
+console.log('In', process.env.NODE_ENV, 'mode, connected to', database, 'db');
+
 const pool = new Pool({
   user: 'ziqianli',
   host: 'localhost',
-  database: 'ziqianli',
+  database,
   port: 5432,
 });
 
