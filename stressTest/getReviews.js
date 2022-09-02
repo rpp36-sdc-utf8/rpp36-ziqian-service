@@ -2,12 +2,31 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
-  stages: [
-    { duration: '5s', target: 1 },
-    { duration: '10s', target: 10 },
-    { duration: '15s', target: 100 },
-    { duration: '1m', target: 1000 },
-  ],
+  scenarios: {
+    // constant_request_rate: {
+    //   executor: 'ramping-arrival-rate',
+    //   startRate: 1,
+    //   timeUnit: '1s', // 1000 iterations per second, i.e. 1000 RPS
+    //   preAllocatedVUs: 100, // how large the initial pool of VUs would be
+    //   maxVUs: 1000, // if the preAllocatedVUs are not enough, we can initialize more
+    //   gracefulStop: '30s',
+    //   stages: [
+    //     // It should start 1 iterations per `timeUnit` for the first 5s.
+    //     { target: 1, duration: '5s' },
+    //     { target: 10, duration: '10s' },
+    //     { target: 100, duration: '30s' },
+    //     { target: 1000, duration: '30s' },
+    //   ],
+    // },
+    constant_request_rate: {
+      executor: 'constant-arrival-rate',
+      rate: 1, // 1 iterations per 'timeUnit'.
+      timeUnit: '1s',
+      duration: '30',
+      preAllocatedVUs: 20,
+      maxVUs: 100,
+    },
+  },
   thresholds: {
     http_req_failed: ['rate<0.01'], // http errors should be less than 1%
     http_req_duration: ['p(100)<2000'], // 100% of requests should be below 2000ms
@@ -16,14 +35,11 @@ export const options = {
 
 // GET /reviews
 export default () => {
-  const startId = 1000010;
-  const varyProductId = 10;
-  for (let id = startId; id > (startId - varyProductId); id --) {
-    const res = http.get(http.url`http://localhost:2000/reviews?count=2&product_id=${id}`);
-    check(res, {
-      'is status 200': (r) => r.status === 200,
-    });
-  }
+  const randomId = 900009 + Math.floor(Math.random() * 100000); // product_id in the last 10% db
+  const res = http.get(http.url`http://localhost:2000/reviews?count=2&product_id=${randomId}`);
+  check(res, {
+    'is status 200': (r) => r.status === 200,
+  });
 };
 
 // GET /reviewsMeta
