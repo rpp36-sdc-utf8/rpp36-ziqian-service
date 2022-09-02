@@ -10,7 +10,7 @@ export const options = {
       duration: '1m',
       preAllocatedVUs: 100,
       maxVUs: 1000,
-      gracefulStop: '1m',
+      gracefulStop: '30s',
     },
     // constant_request_rate: {
     //   executor: 'ramping-arrival-rate',
@@ -20,8 +20,7 @@ export const options = {
     //   maxVUs: 1000, // if the preAllocatedVUs are not enough, we can initialize more
     //   gracefulStop: '30s',
     //   stages: [
-    //     // It should start 1 iterations per `timeUnit` for the first 5s.
-    //     { target: 1, duration: '5s' },
+    //     { target: 1, duration: '5s' }, // 1 iterations per `timeUnit` for the first 5s.
     //     { target: 10, duration: '10s' },
     //     { target: 100, duration: '30s' },
     //     { target: 1000, duration: '30s' },
@@ -34,20 +33,11 @@ export const options = {
   },
 };
 
-// GET /reviews
+// PUT /reviews/:review_id/helpful
 export default () => {
-  const randomId = Math.floor(1000011 * 0.9) + Math.floor(Math.random() * 1000010 * 0.1);
-  const res = http.get(http.url`http://localhost:2000/reviews?count=2&product_id=${randomId}`);
+  const randomId = Math.floor(5774952 * 0.9) + Math.floor(Math.random() * 5774952 * 0.1);
+  const res = http.put(http.url`http://localhost:2000/reviews/${randomId}/report`);
   check(res, {
-    'is status 200': (r) => {
-      // if (r.status !== 200) {
-      //   console.log('product_id', randomId, 'failed with status code', r.status);
-      // }
-      return r.status === 200;
-    },
+    'is status 200': (r) => r.status === 201,
   });
 };
-
-// POST /reviews
-
-// batch GET requests

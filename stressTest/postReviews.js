@@ -20,8 +20,7 @@ export const options = {
     //   maxVUs: 1000, // if the preAllocatedVUs are not enough, we can initialize more
     //   gracefulStop: '30s',
     //   stages: [
-    //     // It should start 1 iterations per `timeUnit` for the first 5s.
-    //     { target: 1, duration: '5s' },
+    //     { target: 1, duration: '5s' }, // 1 iterations per `timeUnit` for the first 5s.
     //     { target: 10, duration: '10s' },
     //     { target: 100, duration: '30s' },
     //     { target: 1000, duration: '30s' },
@@ -34,20 +33,40 @@ export const options = {
   },
 };
 
-// GET /reviews
+// POST /reviews
 export default () => {
-  const randomId = Math.floor(1000011 * 0.9) + Math.floor(Math.random() * 1000010 * 0.1);
-  const res = http.get(http.url`http://localhost:2000/reviews?count=2&product_id=${randomId}`);
+  let photos;
+  const randomId = Math.floor(Math.random() * 1000011);
+  const randomNumberOfChar = Math.floor(Math.random() * 6 + 1);
+  let randomCharId;
+  const characteristics = {};
+  for (let i = 0; i < randomNumberOfChar; i ++) {
+    randomCharId = Math.floor(Math.random() * 3347679);
+    characteristics[randomCharId] = Math.floor(Math.random() * 5 + 1);
+  }
+
+  if (Math.round(Math.random())) {
+    photos = ['urlplaceholder/review_5_photo_number_1.jpg'];
+  } else {
+    photos = [];
+  }
+
+  const body = {
+    product_id: randomId,
+    rating: 4,
+    summary: 'test',
+    body: 'test',
+    name: 'test',
+    email: 'test@test.com',
+    photos,
+    characteristics,
+    recommend: false,
+  };
+
+  const res = http.post(http.url`http://localhost:2000/reviews`, JSON.stringify(body), {
+    headers: { 'Content-Type': 'application/json' },
+  });
   check(res, {
-    'is status 200': (r) => {
-      // if (r.status !== 200) {
-      //   console.log('product_id', randomId, 'failed with status code', r.status);
-      // }
-      return r.status === 200;
-    },
+    'is status 200': (r) => r.status === 201,
   });
 };
-
-// POST /reviews
-
-// batch GET requests
