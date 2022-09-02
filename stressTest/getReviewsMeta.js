@@ -3,6 +3,15 @@ import { check } from 'k6';
 
 export const options = {
   scenarios: {
+    constant_request_rate: {
+      executor: 'constant-arrival-rate',
+      rate: 1, // 1 iterations per 'timeUnit'.
+      timeUnit: '1s',
+      duration: '30',
+      preAllocatedVUs: 100,
+      maxVUs: 1000,
+      gracefulStop: '30s',
+    },
     // constant_request_rate: {
     //   executor: 'ramping-arrival-rate',
     //   startRate: 1,
@@ -18,14 +27,6 @@ export const options = {
     //     { target: 1000, duration: '30s' },
     //   ],
     // },
-    constant_request_rate: {
-      executor: 'constant-arrival-rate',
-      rate: 1, // 1 iterations per 'timeUnit'.
-      timeUnit: '1s',
-      duration: '30',
-      preAllocatedVUs: 100,
-      maxVUs: 1000,
-    },
   },
   thresholds: {
     http_req_failed: ['rate<0.01'], // http errors should be less than 1%
