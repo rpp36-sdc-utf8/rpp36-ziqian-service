@@ -1,9 +1,9 @@
 const express = require('express');
-const morgan = require('morgan');
+// const morgan = require('morgan');
 const Models = require('../primaryDB/model');
 
 const app = express();
-app.use(morgan('tiny'));
+// app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
