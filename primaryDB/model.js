@@ -12,6 +12,7 @@ const fetchPhotos = (reviewId) => {
 
 exports.fetchReviews = (options) => {
   const { productId, sort, count, page } = options;
+  let queryStr;
   let sortStr;
 
   // order by clause
@@ -24,34 +25,54 @@ exports.fetchReviews = (options) => {
       break;
     default:
       sortStr = `
-        (helpfulness / (SELECT max(helpfulness) FROM reviews_${productId}) * 0.7
-        + date / (SELECT max(date) FROM reviews_${productId}) * 0.3) DESC
+        CASE
+          WHEN (SELECT max(helpfulness) FROM reviews_product)=0 IS TRUE THEN date
+          ELSE (helpfulness / (SELECT max(helpfulness) FROM reviews_product) * 0.7
+            + date / (SELECT max(date) FROM reviews_product) * 0.3)
+        END DESC
       `; // helpfulness weighs 70% and date weighs 30%
   }
 
-  const viewQuery = `
-    CREATE OR REPLACE TEMP VIEW reviews_${productId} AS
-    SELECT *
-    FROM hr_sdc.reviews
-    WHERE product_id=${productId}
-    AND reported=false;
-  `;
+  if (sort === 'relavent') {
+    // do views
+    const viewQuery = `
+      CREATE OR REPLACE TEMP VIEW reviews_product AS
+      SELECT *
+      FROM hr_sdc.reviews
+      WHERE product_id=${productId}
+      AND reported=false;
+    `;
 
-  const orderByquery = `
-    SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
-    FROM reviews_${productId}
-    ORDER BY ${sortStr}
-    LIMIT ${count}
-    OFFSET ${page * count};
-  `;
-
-  const queryStr = viewQuery + orderByquery;
+    const orderByquery = `
+      SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
+      FROM reviews_product
+      ORDER BY ${sortStr}
+      LIMIT ${count}
+      OFFSET ${page * count};
+    `;
+    queryStr = viewQuery + orderByquery;
+  } else {
+    // query directly
+    queryStr = `
+      SELECT id AS review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness
+      FROM hr_sdc.reviews
+      WHERE product_id=${productId}
+      ORDER BY ${sortStr}
+      LIMIT ${count}
+      OFFSET ${page * count};
+    `;
+  }
 
   return pool
     .query(queryStr)
     .then(async (data) => {
       // make a copy of reviews data
-      const reviews = data[1].rows.slice();
+      let reviews;
+      if (sort === 'relavent') {
+        reviews = data[1].rows.slice();
+      } else {
+        reviews = data.rows.slice();
+      }
 
       // get all photos for reviews
       const photosPromises = reviews.map((review) => fetchPhotos(review.review_id));
