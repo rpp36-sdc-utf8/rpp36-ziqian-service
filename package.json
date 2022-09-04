@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server-dev": "nodemon server/index.js",
-    "start": "node server/index.js",
-    "test": "npx jest"
+    "server-dev": "NODE_ENV=development nodemon server/index.js",
+    "start": "NODE_ENV=production node server/index.js",
+    "test": "NODE_ENV=development npx jest"
   },
   "repository": {
     "type": "git",

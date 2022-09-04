@@ -1,4 +1,3 @@
-\c ziqianli;
 DROP SCHEMA IF EXISTS hr_sdc CASCADE;
 CREATE SCHEMA hr_sdc;
 

@@ -102,6 +102,45 @@ exports.fetchReviewsMeta = (productId) => {
     GROUP BY characteristic_id, name;
     `;
 
+  const jsonQuery = `
+    SELECT id AS product_id,
+        (
+          SELECT json_object_agg(rating, count) AS ratings
+          FROM (
+            SELECT rating, count(*)
+            FROM hr_sdc.reviews
+            WHERE product_id=${productId}
+            AND reported=false
+            GROUP BY rating
+          ) AS rating
+        ),
+        (
+          SELECT json_object_agg(recommend, count) AS recommended
+          FROM (
+            SELECT recommend, count(*)
+            FROM hr_sdc.reviews
+            WHERE product_id=${productId}
+            AND reported=false
+            GROUP BY recommend
+          ) AS recommend
+        ),
+        (
+          SELECT json_object_agg(char_name, obj)
+          FROM (
+            SELECT name as char_name, json_build_object('id', id, 'value', value) AS obj
+            FROM (
+                SELECT characteristic_id as id, name, avg(value) AS value
+                FROM hr_sdc.characteristic_reviews rv
+                JOIN hr_sdc.characteristics char on char.id=rv.characteristic_id
+                JOIN hr_sdc.reviews r on r.id=rv.review_id where r.reported=false and char.product_id=${productId}
+                GROUP BY characteristic_id, name
+              ) AS sub
+          ) AS characteristics
+        )
+        FROM hr_sdc.products
+        WHERE id=${productId};
+      `
+
   const ratingQuery = pool.query(ratingQueryStr);
   const recommendedQuery = pool.query(recommendQueryStr);
   const charQuery = pool.query(charQueryStr);
