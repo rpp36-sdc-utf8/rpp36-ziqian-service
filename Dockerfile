@@ -6,4 +6,4 @@ RUN npm install
 COPY . /app
 
 EXPOSE 2000
-CMD ["node", "server/index.js"]
+CMD ["node", "NODE_ENV=production node server/index.js"]

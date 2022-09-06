@@ -3,3 +3,6 @@
 node_modules
 secondaryDB
 legacy_data
+stressTest
+coverage
+draft.sql

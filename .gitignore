@@ -3,5 +3,6 @@ node_modules
 secondaryDB
 .DS_Store
 legacy_data
-/coverage
+coverage
 stressTest
+draft.sql
