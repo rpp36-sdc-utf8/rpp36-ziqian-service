@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 
+let host;
 let database;
 if (process.env.NODE_ENV === 'development') {
   database = 'test';
@@ -7,14 +8,20 @@ if (process.env.NODE_ENV === 'development') {
   database = 'ziqianli';
 }
 
-console.log('In', process.env.NODE_ENV, 'mode, connected to', database, 'db');
+if (process.env.NODE_ENV === 'etl') {
+  host = 'ec2-3-84-145-249.compute-1.amazonaws.com';
+} else {
+  host = 'localhost';
+}
 
 const pool = new Pool({
   user: 'ziqianli',
-  host: 'localhost',
+  host,
   database,
   port: 5432,
 });
+
+console.log('In', process.env.NODE_ENV, 'mode, host is:', host, 'connected to', database, 'db');
 
 // the pool will emit an error on behalf of any idle clients
 // it contains if a backend error or network partition happens

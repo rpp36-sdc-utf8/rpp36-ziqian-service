@@ -6,7 +6,8 @@
   "scripts": {
     "server-dev": "NODE_ENV=development nodemon server/index.js",
     "start": "NODE_ENV=production node server/index.js",
-    "test": "NODE_ENV=development npx jest"
+    "test": "NODE_ENV=development npx jest",
+    "etl": "NODE_ENV=etl node etl_system/index.js"
   },
   "repository": {
     "type": "git",
