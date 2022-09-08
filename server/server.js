@@ -51,7 +51,6 @@ app.get('/reviews/meta', (req, res) => {
 
   Models.fetchReviewsMeta(product_id)
     .then((data) => {
-      data.product_id = product_id;
       res.status(200).json(data);
     })
     .catch((err) => res.status(500).json(err));
