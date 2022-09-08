@@ -6,3 +6,5 @@ legacy_data
 coverage
 stressTest
 draft.sql
+*.sh
+*.sql
