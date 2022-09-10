@@ -1,9 +1,14 @@
 const express = require('express');
-// const morgan = require('morgan');
 const Models = require('../primaryDB/model');
 
 const app = express();
-// app.use(morgan('tiny'));
+
+if (process.env.NODE_ENV === 'development') {
+  const morgan = require('morgan');
+  app.use(morgan('tiny'));
+}
+
+app.use(express.static(__dirname + '/static'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

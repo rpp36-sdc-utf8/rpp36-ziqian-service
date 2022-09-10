@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === 'test') {
 
 if (process.env.NODE_ENV === 'production') {
   pool = new Pool({
-    host: 'ec2-54-243-20-130.compute-1.amazonaws.com',
+    host: 'ec2-107-21-50-206.compute-1.amazonaws.com',
     user,
     password: 'password',
     database,
