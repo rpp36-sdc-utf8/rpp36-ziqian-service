@@ -1,9 +1,9 @@
 const express = require('express');
-const morgan = require('morgan');
+// const morgan = require('morgan');
 const Models = require('../primaryDB/model');
 
 const app = express();
-app.use(morgan('tiny'));
+// app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -51,7 +51,6 @@ app.get('/reviews/meta', (req, res) => {
 
   Models.fetchReviewsMeta(product_id)
     .then((data) => {
-      data.product_id = product_id;
       res.status(200).json(data);
     })
     .catch((err) => res.status(500).json(err));

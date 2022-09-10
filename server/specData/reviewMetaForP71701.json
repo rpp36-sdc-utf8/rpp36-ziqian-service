@@ -1,17 +1,17 @@
 {
+    "product_id": 71701,
     "ratings": {
-        "1": "2",
-        "5": "1"
+        "1": 2,
+        "5": 1
     },
     "recommended": {
-        "false": "2",
-        "true": "1"
+        "false": 2,
+        "true": 1
     },
     "characteristics": {
         "Quality": {
             "id": 239725,
-            "value": "3.6666666666666667"
+            "value": 3.6666666666666665
         }
-    },
-    "product_id": "71701"
+    }
 }
