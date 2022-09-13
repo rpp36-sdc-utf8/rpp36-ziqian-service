@@ -8,3 +8,4 @@ coverage
 draft.sql
 *.sh
 *.sql
+newrelic.js

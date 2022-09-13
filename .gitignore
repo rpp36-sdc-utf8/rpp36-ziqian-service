@@ -8,3 +8,4 @@ stressTest
 draft.sql
 *.sh
 *.sql
+newrelic.js
