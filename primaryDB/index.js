@@ -4,10 +4,10 @@ const user = 'ziqianli';
 let database;
 let pool;
 
-if (process.env.NODE_ENV === 'test') {
-  database = 'test';
-} else {
+if (process.env.NODE_ENV === 'production') {
   database = 'ziqianli';
+} else {
+  database = 'test';
 }
 
 if (process.env.NODE_ENV === 'production') {
