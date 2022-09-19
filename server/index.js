@@ -1,4 +1,6 @@
-require('newrelic');
+if (process.env.NODE_ENV === 'new-relic') {
+  require('newrelic');
+}
 
 const server = require('./server');
 
