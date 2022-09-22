@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const pool = require('./index');
-const helper = require('./helper');
+// const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
   const queryStr = `SELECT id, url FROM hr_sdc.photos WHERE review_id=${reviewId};`;
