@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV === 'new-relic') {
+  require('newrelic');
+}
+
 const server = require('./server');
 
 const port = 2000;

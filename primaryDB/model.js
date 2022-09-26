@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const pool = require('./index');
-const helper = require('./helper');
+// const helper = require('./helper');
 
 const fetchPhotos = (reviewId) => {
   const queryStr = `SELECT id, url FROM hr_sdc.photos WHERE review_id=${reviewId};`;
@@ -146,49 +146,6 @@ exports.fetchReviewsMeta = (productId) => {
       console.log(err);
       throw err;
     });
-
-  // const ratingQueryStr = `
-  //   SELECT rating, count(*)
-  //   FROM hr_sdc.reviews
-  //   WHERE product_id=${productId}
-  //   AND reported=false
-  //   GROUP BY rating;
-  //   `;
-  // const recommendQueryStr = `
-  //   SELECT recommend, count(*)
-  //   FROM hr_sdc.reviews
-  //   WHERE product_id=${productId}
-  //   AND reported=false
-  //   GROUP BY recommend;
-  //   `;
-  // const charQueryStr = `
-  //   SELECT characteristic_id, name, avg(value) AS value
-  //   FROM hr_sdc.characteristic_reviews rv
-  //   JOIN hr_sdc.characteristics char on char.id=rv.characteristic_id
-  //   JOIN hr_sdc.reviews r on r.id=rv.review_id where r.reported=false and char.product_id=${productId}
-  //   GROUP BY characteristic_id, name;
-  //   `;
-  // const ratingQuery = pool.query(ratingQueryStr);
-  // const recommendedQuery = pool.query(recommendQueryStr);
-  // const charQuery = pool.query(charQueryStr);
-
-  // return Promise.all([ratingQuery, recommendedQuery, charQuery])
-  //   .then((result) => {
-  //     const [rating, recommend, char] = result;
-  //     const ratings = helper.convertArrToObj(rating.rows, 'rating', 'count');
-  //     const recommended = helper.convertArrToObj(recommend.rows, 'recommend', 'count');
-  //     const characteristics = helper.convertCharObj(char.rows, 'name', 'value', 'characteristic_id');
-
-  //     return {
-  //       ratings,
-  //       recommended,
-  //       characteristics,
-  //     };
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //     throw err;
-  //   });
 };
 
 exports.insertToReview = (data) => {

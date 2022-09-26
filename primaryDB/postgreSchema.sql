@@ -10,6 +10,15 @@ CREATE TABLE hr_sdc.products (
   default_price TEXT
 );
 
+
+CREATE TABLE hr_sdc.characteristics (
+  id SERIAL PRIMARY KEY,
+  product_id INT references hr_sdc.products NOT NULL,
+  name TEXT NOT NULL
+);
+
+CREATE INDEX char_for_product ON hr_sdc.characteristics (product_id);
+
 CREATE TABLE hr_sdc.reviews (
   id SERIAL PRIMARY KEY,
   product_id INT references hr_sdc.products NOT NULL,
@@ -26,14 +35,6 @@ CREATE TABLE hr_sdc.reviews (
 );
 
 CREATE INDEX review_for_product ON hr_sdc.reviews (product_id);
-
-CREATE TABLE hr_sdc.characteristics (
-  id SERIAL PRIMARY KEY,
-  product_id INT references hr_sdc.products NOT NULL,
-  name TEXT NOT NULL
-);
-
-CREATE INDEX char_for_product ON hr_sdc.characteristics (product_id);
 
 CREATE TABLE hr_sdc.characteristic_reviews (
   id SERIAL PRIMARY KEY,
