@@ -10,7 +10,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(express.static(__dirname + '/static'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 
 app.route('/reviews')
   .get((req, res) => {
@@ -69,7 +69,10 @@ app.put('/reviews/:review_id/helpful', (req, res) => {
     .then(() => {
       res.status(201).send('Updated');
     })
-    .catch((err) => res.status(500).json(err));
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 app.put('/reviews/:review_id/report', (req, res) => {
@@ -80,7 +83,10 @@ app.put('/reviews/:review_id/report', (req, res) => {
     .then(() => {
       res.status(201).send('Updated');
     })
-    .catch((err) => res.status(500).json(err));
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 module.exports = app;

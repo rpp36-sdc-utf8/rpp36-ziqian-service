@@ -17,5 +17,5 @@ COPY . /app
 
 
 EXPOSE 2000
-# run npm start when running the container
-CMD ["npm", "start"]
+# run server when running the container
+CMD ["node", "server/index.js"]

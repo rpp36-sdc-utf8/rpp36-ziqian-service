@@ -4,15 +4,15 @@ const user = 'ziqianli';
 let database;
 let pool;
 
-if (!process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'development') {
   database = 'ziqianli';
 } else {
   database = 'test';
 }
 
-if (!process.env.NODE_ENV === 'development') {
+if (!process.env.NODE_ENV !== 'development') {
   pool = new Pool({
-    host: 'ec2-54-152-10-235.compute-1.amazonaws.com',
+    host: 'ec2-54-226-59-171.compute-1.amazonaws.com',
     user,
     password: 'password',
     database,
